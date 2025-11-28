@@ -1,0 +1,156 @@
+$(document).ready(function(){
+	attendanceTable()
+	$(document).on('click',".attendanceInfo",function(){
+        var attendance_id = $(this).data('id');
+        var emp_name = $(this).data('emp_name');
+        var emp_id = $(this).data('emp_id');
+
+		$('#emp_id').val($(this).data('emp_id'));
+		$('.emp_name').html(emp_name);
+		$('.infotitle').html($(this).data('infotitle'));
+		$('.totalhour').html($(this).data('totalhour'));
+		$('.punch_in').html($(this).data('punch_in'));
+		$('.punch_out').html($(this).data('punch_out'));
+		$('.overtime').html($(this).data('overtime'));
+		$('#attendanceInfo').modal();
+        /* $.ajax({
+            url:base_url + controller + '/attendanceInfo',
+                type:'post',
+                data:{id:purchase_id},
+                dataType:'json',
+                success:function(data){
+                    
+                }
+        }); */
+    });
+	
+	$(document).on('click',".getDailyAttendance",function(){
+        var report_date = $("#report_date").val();
+		var cm_id = $("#cm_id").val();
+		$.ajax({ 
+            type: "POST",   
+            url: base_url + 'reports/attendanceReport/getDailyAttendance',   
+            data: {report_date : report_date, cm_id:cm_id},
+			dataType:"json",
+        }).done(function(response){
+            $('#attendanceSummaryTable').dataTable().fnDestroy();
+			$('.attendance-summary').html(response.tbody);
+			$('.totalEmpStat').html(response.totalEmp);
+			$('.presentStat').html(response.present);
+			$('.lateStat').html(response.late);
+			$('.absentStat').html(response.absent);
+			attendanceSummaryTable();
+        });
+    });
+	
+	$(document).on('click',".syncDevicePunches",function(){
+        var sync_date = $("#sync_date").val();
+		$.ajax({ 
+            type: "POST",   
+            url: base_url + controller + '/syncDevicePunches',   
+            data: {sync_date : sync_date},
+			dataType:"json",
+        }).done(function(response){
+			if(response.status==1){
+				$('.lastSyncedAt').html(response.lastSyncedAt);
+				Swal.fire( 'Success', response.message, 'success' );
+			}else{
+				Swal.fire( 'Sorry...!', response.message, 'error' );
+			}
+            
+        });
+    });
+});
+
+function getHourlyReport(file_type='view')
+{
+    var month = $("#month").val();
+    var dept_id = $("#dept_id").val();
+    var emp_type = $("#emp_type").val();
+    var report_type = $("#report_type").val();
+	var emp_unit_id = $("#emp_unit_id").val();
+	if(file_type == 'view')
+	{
+		$.ajax({
+			url:base_url + controller + '/getHourlyReport',
+			type:'post',
+			data:{month:month,dept_id:dept_id,file_type:file_type,emp_type:emp_type,report_type:report_type,emp_unit_id:emp_unit_id},
+			dataType:'json',
+			success:function(data){
+				$("#attendanceTable").dataTable().fnDestroy();
+				$("#theadData").html(data.thead);
+				$("#tbodyData").html(data.tbody);
+				attendanceTable();
+			}
+		});
+	}
+	else
+	{
+		window.open(base_url + controller + '/getHourlyReport/' + month + '/' + dept_id + '/' + emp_type + '/' + report_type + '/' + emp_unit_id + '/' + file_type, '_blank').focus();
+	}
+}
+
+function attendanceTable()
+{
+	var attendanceTable = $('#attendanceTable').DataTable( 
+	{
+		responsive: true,
+		//'stateSave':true,
+		"autoWidth" : false,
+		order:[],
+		"columnDefs": 	[
+							{ type: 'natural', targets: 0 },
+							{ orderable: false, targets: "_all" }, 
+							{ className: "text-left", targets: [0,1] }, 
+							{ className: "text-center", "targets": "_all" } 
+						],
+		pageLength:25,
+		language: { search: "" },
+		lengthMenu: [
+            [ 10, 25, 50, 100, -1 ],[ '10 rows', '25 rows', '50 rows', '100 rows', 'Show all' ]
+        ],
+		dom: "<'row'<'col-sm-7'B><'col-sm-5'f>>" +"<'row'<'col-sm-12't>>" + "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+		buttons: [ 'pageLength', 'excel', {text: 'Refresh',action: function ( e, dt, node, config ) {loadAttendanceSheet();}}]
+	});
+	attendanceTable.buttons().container().appendTo( '#attendanceTable_wrapper toolbar' );
+	$('#attendanceTable_filter .form-control-sm').css("width","97%");
+	$('#attendanceTable_filter .form-control-sm').attr("placeholder","Search.....");
+	$('.dataTables_filter').css("text-align","left");
+	$('#attendanceTable_filter label').css("display","block");
+	$('.btn-group>.btn:first-child').css("border-top-right-radius","0");
+	$('.btn-group>.btn:first-child').css("border-bottom-right-radius","0");
+	return attendanceTable;
+}
+
+function printMonthlyAttendance(file_type)
+{
+	var emp_unit_id = $("#emp_unit_id").val();
+    var dept_id = $("#dept_id").val();
+    var month = $("#month").val();
+	window.open(base_url + controller + '/printMonthlyAttendance/'+dept_id+'/'+emp_unit_id+'/'+month+'/'+file_type, '_blank').focus();
+}
+function printSalarySheet(file_type)
+{
+    var month = $("#month").val();
+    var biomatric_id = $('#biomatric_id').val();
+	window.open(base_url + controller + '/printSalarySheet/'+month+'/'+biomatric_id+'/'+file_type, '_blank').focus();
+}
+function printMonthlySummary(file_type)
+{
+    var month = $("#month").val();
+    var from_date = $("#from_date").val();
+    var to_date = $("#to_date").val();
+    var biomatric_id = $('#biomatric_id').val();
+	var emp_unit_id = $("#emp_unit_id").val();
+    var fnName = '/printMonthlySummary/';
+    if(file_type == 'hourly'){fnName = '/printHourlyReport/';}
+	window.open(base_url + controller + fnName +from_date+'~'+to_date+'/'+biomatric_id+'/'+emp_unit_id+'/'+file_type, '_blank').focus();
+}
+function printMonthlySummaryNew(file_type)
+{
+    var month = $("#month").val();
+    var from_date = $("#from_date").val();
+    var to_date = $("#to_date").val();
+    var biomatric_id = $('#biomatric_id').val();
+	window.open(base_url + controller + '/printMonthlySummaryNew/'+from_date+'~'+to_date+'/'+biomatric_id+'/'+file_type, '_blank').focus();
+}
