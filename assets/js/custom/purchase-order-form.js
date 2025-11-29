@@ -265,12 +265,12 @@ function AddRow(data) {
 	btnEdit.attr("onclick", "Edit(" + JSON.stringify(data) + ",this);");
 	btnEdit.attr("class", "btn btn-sm btn-outline-warning waves-effect waves-light");
     
-    if (parseFloat(data.dispatch_qty) == 0) {
+    // if (parseFloat(data.dispatch_qty) == 0) {
     	cell.append(btnEdit);
     	cell.append(btnRemove);
     	cell.attr("class", "text-center");
     	cell.attr("style", "width:10%;");
-    }
+    // }
 
     claculateColumn();
 }

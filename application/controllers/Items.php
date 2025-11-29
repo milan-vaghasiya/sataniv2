@@ -12,6 +12,7 @@ class Items extends MY_Controller{
     private $inspectionForm = "item_master/inspection";
     private $rmInspectionForm = "item_master/rm_inspection";
     private $productDetails ="item_master/product_details";
+    private $serviceForm = "item_master/service_form";
 
     public function __construct(){
 		parent::__construct();
@@ -51,7 +52,12 @@ class Items extends MY_Controller{
         $this->data['customOptionList'] = $this->customOption->getMasterList(); 
         $this->data['materialGrade'] = $this->materialGrade->getMaterialGrades();
         $this->data['supplierList'] = $this->party->getPartyList(['party_category'=>2]); // 06-08-2024
-        $this->load->view($this->form,$this->data);
+        
+        if($data['item_type'] == 8){
+            $this->load->view($this->serviceForm,$this->data);
+        }else{
+            $this->load->view($this->form,$this->data);
+        }
     }
     
     /* Auto Generate Item Code */
@@ -65,6 +71,8 @@ class Items extends MY_Controller{
             $prefix = "CS";
         elseif($itemType == 3):
             $prefix = "RM";
+        elseif($itemType == 8):
+            $prefix = "SE";
         endif;
 
         $item_code = $prefix.sprintf("%04d",$code);
@@ -150,7 +158,12 @@ class Items extends MY_Controller{
         $this->data['customData'] = $this->item->getItemUdfData(['item_id'=>$data['id']]);
         $this->data['materialGrade'] = $this->materialGrade->getMaterialGrades();
         $this->data['supplierList'] = $this->party->getPartyList(['party_category'=>2]); // 06-08-2024
-        $this->load->view($this->form,$this->data);
+
+        if($itemDetail->item_type == 8){
+            $this->load->view($this->serviceForm,$this->data);
+        }else{
+            $this->load->view($this->form,$this->data);
+        }
     }
 
     public function delete(){

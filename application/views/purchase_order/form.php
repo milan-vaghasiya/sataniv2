@@ -228,7 +228,7 @@
 
                                                 $conParam = "{'postData':{'item_type':2},'modal_id' : 'bs-left-lg-modal','controller':'items', 'call_function':'addItem', 'form_id' : 'addItem', 'title' : 'Add Consumable','res_function':'resItemMaster','js_store_fn':'customStore'}";
 
-                                                //$serviceParam = "{'postData':{'item_type':8},'modal_id' : 'bs-left-lg-modal','controller':'items', 'call_function':'addItem', 'form_id' : 'addItem', 'title' : 'Add Service Item','res_function':'resItemMaster','js_store_fn':'customStore'}";
+                                                $serviceParam = "{'postData':{'item_type':8},'modal_id' : 'bs-left-lg-modal','controller':'items', 'call_function':'addItem', 'form_id' : 'addItem', 'title' : 'Add Service Item','res_function':'resItemMaster','js_store_fn':'customStore'}";
 
                                                 $machineParam = "{'postData':{'item_type':5},'modal_id' : 'bs-left-lg-modal','controller':'items', 'call_function':'addItem', 'form_id' : 'addItem', 'title' : 'Add Machineries','res_function':'resItemMaster','js_store_fn':'customStore'}";
                                             ?>
@@ -239,6 +239,8 @@
                                             <button type="button" class="dropdown-item" onclick="modalAction(<?=$conParam?>);"><i class="fa fa-plus"></i> Consumable</button>
 
                                             <button type="button" class="dropdown-item" onclick="modalAction(<?=$machineParam?>);"><i class="fa fa-plus"></i> Machineries</button>
+
+                                            <button type="button" class="dropdown-item" onclick="modalAction(<?=$serviceParam?>);"><i class="fa fa-plus"></i> Service Item</button>
                                         </div>
                                     </span>
                                 </div>

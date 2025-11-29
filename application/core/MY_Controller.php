@@ -21,7 +21,7 @@ class MY_Controller extends CI_Controller{
 	public $automotiveArray = ["1" => 'Yes', "2" => "No"];
 	public $vendorTypes = ['Manufacture', 'Service'];
 
-	public $itemTypes = [1 => "Finish Goods", 2 => "Consumable", 3 => "Raw Material", 5 => "Machineries"/* , 4 => "Capital Goods", 6 => "Instruments", 7 => "Gauges", 8 => "Services", 9 => "Packing Material", 10 => "Scrap" */]; // 20-02-2024
+	public $itemTypes = [1 => "Finish Goods", 2 => "Consumable", 3 => "Raw Material", 5 => "Machineries", 8 => "Services"/* , 4 => "Capital Goods", 6 => "Instruments", 7 => "Gauges", 9 => "Packing Material", 10 => "Scrap" */]; // 20-02-2024
 	public $stockTypes = [0=>"None",1=>'Batch Wise',2=>"Serial Wise"];
 	public $fgColorCode = ["WHITE"=>"W","GREY"=>"G"];
 	public $fgCapacity = ["3 TON"=>"3T","5 TON"=>"5T"];

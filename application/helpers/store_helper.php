@@ -86,6 +86,7 @@ function getStoreDtHeader($page){
     $data['returnRequisition'][] = ["name" => "Req Date"];
     $data['returnRequisition'][] = ["name" => "Issue Number"];
     $data['returnRequisition'][] = ["name" => "Issue Date"];
+    $data['returnRequisition'][] = ["name" => "Issue To"];
     $data['returnRequisition'][] = ["name" => "Item Name"];
     $data['returnRequisition'][] = ["name" => "Issue Qty"];
     $data['returnRequisition'][] = ["name" => "Return Qty"];
@@ -120,6 +121,7 @@ function getStoreDtHeader($page){
     $data['inspection'][] = ["name" => "Action", "textAlign" => "center"];
     $data['inspection'][] = ["name" => "#", "textAlign" => "center"];
     $data['inspection'][] = ["name" => "Issue Number"];
+    $data['inspection'][] = ["name" => "Issue To"];
     $data['inspection'][] = ["name" => "Date"];
     $data['inspection'][] = ["name" => "Item Name"];
     $data['inspection'][] = ["name" => "Total Qty"];
@@ -275,7 +277,7 @@ function getReturnRequisitionData($data){
     }
 
     $action = getActionButton($returnButton);
-    return [$action,$data->sr_no,$data->trans_number,formatDate($data->trans_date),$data->issue_number,formatDate($data->issue_date),$data->item_name,floatval($data->issue_qty),floatval($data->return_qty)];
+    return [$action,$data->sr_no,$data->trans_number,formatDate($data->trans_date),$data->issue_number,formatDate($data->issue_date),$data->emp_name,$data->item_name,floatval($data->issue_qty),floatval($data->return_qty)];
 }
 
 // 26-10-2024
@@ -355,7 +357,7 @@ function getInspectionData($data) {
         $inspectButton = '<a class="btn btn-warning btn-edit permission-modify" href="javascript:void(0)" datatip="Inspect" flow="down" onclick="modalAction('.$inspectParam.');"><i class="fa fa-search" ></i></a>';
     }
     $action = getActionButton($inspectButton);
-    return [$action,$data->sr_no,$data->issue_number,formatDate($data->trans_date),$data->item_name,$data->total_qty,$data->batch_no,$data->remark];
+    return [$action,$data->sr_no,$data->issue_number,$data->issue_to,formatDate($data->trans_date),$data->item_name,$data->total_qty,$data->batch_no,$data->remark];
 }
 
 /* Prc Material Issue Table Data */

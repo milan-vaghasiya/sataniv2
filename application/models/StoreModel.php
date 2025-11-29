@@ -87,6 +87,7 @@ class StoreModel extends MasterModel{
             $data['searchCol'][] = "store_request.trans_date";
             $data['searchCol'][] = "issue_register.issue_number";
             $data['searchCol'][] = "DATE_FORMAT(issue_register.issue_date,'%d-%m-%Y')";
+            $data['searchCol'][] = "employee_master.emp_name";
             $data['searchCol'][] = "item_master.item_name";
             $data['searchCol'][] = "issue_register.issue_qty";
             $data['searchCol'][] = "issue_register.return_qty";
@@ -111,9 +112,10 @@ class StoreModel extends MasterModel{
 
     public function getInspDTRows($data) {
         $data['tableName'] = $this->materialReturn;
-        $data['select'] = "material_return.*,issue_register.issue_number,item_master.item_name,item_master.item_code";
+        $data['select'] = "material_return.*,issue_register.issue_number,item_master.item_name,item_master.item_code,employee_master.emp_name as issue_to";
         $data['leftJoin']['issue_register'] = "material_return.issue_id  = issue_register.id";
         $data['leftJoin']['item_master'] = "item_master.id  = material_return.item_id";
+        $data['leftJoin']['employee_master'] = "employee_master.id  = issue_register.issued_to";
         $data['where']['material_return.trans_type'] = $data['trans_type'];
 
         if($data['trans_type'] == 1){
@@ -130,6 +132,7 @@ class StoreModel extends MasterModel{
         $data['searchCol'][] = "material_return.total_qty";
         $data['searchCol'][] = "material_return.batch_no";
         $data['searchCol'][] = "material_return.remark";
+        $data['searchCol'][] = "employee_master.emp_name";
 
 		$columns =array(); foreach($data['searchCol'] as $row): $columns[] = $row; endforeach;
 

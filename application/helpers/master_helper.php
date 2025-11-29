@@ -118,6 +118,16 @@ function getMasterDtHeader($page){
     $data['customOption'][] = ["name"=>"Type"];
     $data['customOption'][] = ["name"=>"Title"];
 
+    /* Services Header */
+    $data['services'][] = ["name"=>"Action","class"=>"text-center no_filter noExport","sortable"=>FALSE,"style"=>"width:5%;"];
+	$data['services'][] = ["name"=>"#","class"=>"text-center no_filter","sortable"=>FALSE,"style"=>"width:5%;"];
+    $data['services'][] = ["name"=>"Item Code"];
+    $data['services'][] = ["name"=>"Item Name"];
+    $data['services'][] = ["name"=>"Category"];
+    $data['services'][] = ["name"=>"Unit"];
+    $data['services'][] = ["name"=>"HSN Code"];
+    $data['services'][] = ["name"=>"GST (%)"];
+
     return tableHeader($data[$page]);
 }
 
@@ -225,7 +235,6 @@ function getProductData($data){
     }
     
     $action = getActionButton($inspectionButton.$revisionButton.$editButton.$deleteButton);
-
     
     return [$action,$data->sr_no,$item_code,$data->item_name,$data->category_name,$data->unit_name,$data->hsn_code,floatVal($data->gst_per),floatVal($data->price)];
 }

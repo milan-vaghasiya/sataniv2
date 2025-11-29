@@ -34,8 +34,8 @@ class ItemModel extends MasterModel{
         $data['searchCol'][] = "item_category.category_name";
         $data['searchCol'][] = "unit_master.unit_name";
         $data['searchCol'][] = "item_master.hsn_code";
-        $data['searchCol'][] = "item_master.gst_per";
-        $data['searchCol'][] = "item_master.price";
+        $data['searchCol'][] = "item_master.gst_per";        
+        $data['searchCol'][] =  $data['item_type'] != 8 ? "item_master.price" : '';
 
 		$columns =array(); foreach($data['searchCol'] as $row): $columns[] = $row; endforeach;
 
