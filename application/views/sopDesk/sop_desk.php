@@ -47,10 +47,10 @@
                             <a class="btn btn-outline-secondary btn-icon-circle btn-icon-circle-sm stageFilter" data-postdata='{"status":"4"}' data-bs-toggle="tab" href="javascript:void(0)" role="tab" datatip="On Hold" flow="down" ><i class="fas fa-stop"></i></a>
                             <span class="badge bg-secondary w-100">On Hold</span>
                         </li>
-						<!--<li class="nav-item" role="presentation">-->
-      <!--                      <a class="btn btn-outline-dark btn-icon-circle btn-icon-circle-sm stageFilter" data-postdata='{"status":"5"}' data-bs-toggle="tab" href="javascript:void(0)" role="tab" datatip="Short Closed" flow="down" ><i class="fas fa-exclamation-triangle"></i></a>-->
-      <!--                      <span class="badge bg-dark w-100">Short Closed</span>-->
-      <!--                  </li>-->
+						<li class="nav-item" role="presentation">
+                            <a class="btn btn-outline-dark btn-icon-circle btn-icon-circle-sm stageFilter" data-postdata='{"status":"5"}' data-bs-toggle="tab" href="javascript:void(0)" role="tab" datatip="Short Closed" flow="down" ><i class="fas fa-exclamation-triangle"></i></a>
+                            <span class="badge bg-dark w-100">Short Closed</span>
+                        </li>
                     </ul>
 					<div class="cd-search mb-1">
 						<div class="input-group">

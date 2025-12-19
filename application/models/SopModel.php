@@ -506,8 +506,10 @@ class SopModel extends MasterModel{
         $queryData = array();          
 		$queryData['tableName'] = "prc_log";
 		
-		$queryData['select'] = "prc_log.*,employee_master.emp_name,shift_master.shift_name,prc_log_detail.remark,prc_log_detail.rej_reason,prc_log_detail.rej_param,prc_detail.process_ids,prc_master.item_id,prc_master.prc_number,item_master.item_name,process_master.process_name,product_process.cycle_time,prc_log_detail.start_time,prc_log_detail.end_time,prc_process.next_process_id";
+		$queryData['select'] = "prc_log.*,employee_master.emp_name,shift_master.shift_name,prc_log_detail.remark,prc_log_detail.rej_reason,prc_log_detail.rej_param,prc_detail.process_ids,prc_master.item_id,prc_master.prc_number,item_master.item_name,process_master.process_name,product_process.cycle_time,prc_log_detail.start_time,prc_log_detail.end_time,prc_process.next_process_id,IFNULL(company_info.company_alias,'SFT (Forging)') as company_alias";
 		$queryData['select'] .=', IF(prc_log.process_by = 1, machine.item_code, IF(prc_log.process_by = 2,department_master.name, IF(prc_log.process_by = 3,party_master.party_name,""))) as processor_name,machine.item_name as machine_name';
+		$queryData['select'] .= ",IFNULL(company_info.company_alias,'SFT (Forging)') as company_alias, partyMaster.party_name, deptMaster.name as dept_name, prv_process.process_name as prv_process_name";
+		
 		$queryData['leftJoin']['item_master machine'] = "machine.id = prc_log.processor_id";
 		$queryData['leftJoin']['department_master'] = "department_master.id = prc_log.processor_id";
 		$queryData['leftJoin']['party_master'] = "party_master.id = prc_log.processor_id";
@@ -520,6 +522,12 @@ class SopModel extends MasterModel{
 		$queryData['leftJoin']['process_master'] = "process_master.id = prc_log.process_id";
 		$queryData['leftJoin']['prc_process'] = "prc_process.id = prc_log.prc_process_id";
 		$queryData['leftJoin']['product_process'] = "product_process.process_id = prc_log.process_id AND product_process.item_id = prc_master.item_id AND product_process.is_delete = 0";
+        $queryData['leftJoin']['company_info'] = "company_info.id = prc_log.cm_id";
+        
+		$queryData['leftJoin']['party_master partyMaster'] = "partyMaster.id = item_master.party_id";
+		$queryData['leftJoin']['prc_process prvProcess'] = "prvProcess.prc_id = prc_log.prc_id AND prvProcess.next_process_id = prc_log.process_id AND prvProcess.is_delete = 0";
+		$queryData['leftJoin']['process_master prv_process'] = "prv_process.id = prvProcess.current_process_id";
+		$queryData['leftJoin']['department_master deptMaster'] = "deptMaster.id = employee_master.emp_dept_id";
         
 		if(!empty($param['nextProcess'])){
 			$queryData['select'] .= ',nxtProcess.process_name AS next_process';
@@ -562,13 +570,21 @@ class SopModel extends MasterModel{
 		if(!empty($param['machine_id'])){ $queryData['where']['prc_log.machine_id'] = $param['machine_id']; }
 
 		if(!empty($param['ref_id'])){ $queryData['where']['prc_log.ref_id'] = $param['ref_id']; }
- 		/*if(!empty($param['created_by'])){ $queryData['where']['prc_log.created_by'] = $param['created_by']; } */ //30-12-2024
+		
+ 		/*if(!empty($param['created_by'])){ $queryData['where']['prc_log.created_by'] = $param['created_by']; } */
 
 		if(isset($param['ref_trans_id'])){ $queryData['where']['prc_log.ref_trans_id'] = $param['ref_trans_id']; }
+		
+		if(!empty($param['limit'])){ $queryData['limit'] = $param['limit']; }
+		
 		if(!empty($param['group_by'])){
 			$queryData['group_by'][] = $param['group_by'];
 		}
-		$queryData['order_by']['prc_log.id'] = 'ASC';
+		
+		$queryData['order_by']['prc_log.trans_date'] = 'DESC';
+		
+		$queryData['order_by']['prc_log.id'] = 'DESC';
+		
 		if(!empty($param['single_row'])){
 			$result = $this->row($queryData);
 		}else{
@@ -581,9 +597,10 @@ class SopModel extends MasterModel{
         $queryData = array();          
 		$queryData['tableName'] = "prc_movement";
 		
-		$queryData['select'] = "prc_movement.*,prc_process.work_type,prc_master.item_id,prc_master.prc_number,prc_master.prc_type,location_master.store_name,prc_master.prc_qty, item_master.item_name, item_master.item_code, process_master.process_name as next_process_name,current_process.process_name as current_process_name,prc_master.ref_job_id";
+		$queryData['select'] = "prc_movement.*,prc_process.work_type,prc_master.item_id,prc_master.prc_number,prc_master.prc_type,location_master.store_name,prc_master.prc_qty, item_master.item_name, item_master.item_code, process_master.process_name as next_process_name,current_process.process_name as current_process_name,prc_master.ref_job_id,partyMaster.party_name,deptMaster.name as dept_name,employee_master.emp_name,pre_process.process_name as prv_process_name";
 		$queryData['select'] .=', IF(prc_movement.send_to = 1, machine.item_code, IF(prc_movement.send_to = 2,department_master.name, IF(prc_movement.send_to = 3,party_master.party_name,""))) as processor_name,
 								IF(prc_movement.send_to = 1, "Inhouse", IF(prc_movement.send_to = 2,"Department", IF(prc_movement.send_to = 3,"Vendor", IF(prc_movement.send_to = 4,"Stored","")))) as send_to_name';
+		$queryData['select'] .= ",IFNULL(company_info.company_alias,'SFT (Forging)') as company_alias";
 		$queryData['leftJoin']['item_master machine'] = "machine.id = prc_movement.processor_id";
 		$queryData['leftJoin']['department_master'] = "department_master.id = prc_movement.processor_id";
 		$queryData['leftJoin']['party_master'] = "party_master.id = prc_movement.processor_id";
@@ -591,8 +608,15 @@ class SopModel extends MasterModel{
 		$queryData['leftJoin']['prc_master'] = "prc_master.id = prc_movement.prc_id";
 		$queryData['leftJoin']['location_master'] = "location_master.id = prc_movement.processor_id";
 		$queryData['leftJoin']['process_master'] = "process_master.id = prc_movement.next_process_id";
-		$queryData['leftJoin']['process_master current_process'] = "current_process.id = prc_movement.process_id"; // 30-12-2024
+		$queryData['leftJoin']['process_master current_process'] = "current_process.id = prc_movement.process_id";
 		$queryData['leftJoin']['item_master'] = "item_master.id = prc_master.item_id";
+        $queryData['leftJoin']['company_info'] = "company_info.id = prc_movement.cm_id";
+        
+		$queryData['leftJoin']['party_master partyMaster'] = "partyMaster.id = item_master.party_id";
+		$queryData['leftJoin']['employee_master'] = "employee_master.id = prc_movement.created_by";
+		$queryData['leftJoin']['department_master deptMaster'] = "deptMaster.id = employee_master.emp_dept_id";
+		$queryData['leftJoin']['prc_process prvProcess'] = "prvProcess.prc_id = prc_movement.prc_id AND prvProcess.next_process_id = prc_movement.process_id AND prvProcess.is_delete = 0";
+		$queryData['leftJoin']['process_master pre_process'] = "pre_process.id = prvProcess.current_process_id"; 
 		
 		if(!empty($param['nextPrcProcessData'])){
 			$queryData['select'] .= ',nextProcess.id AS next_prc_process';
@@ -874,17 +898,24 @@ class SopModel extends MasterModel{
 		}
 	}
 
-	//30-12-2024
+	
 	public function getPrcAcceptData($param){
 		$queryData = array();          
 		$queryData['tableName'] = "prc_accept_log";
-		$queryData['select'] = "prc_accept_log.*,prc_master.prc_number,prc_master.mfg_type,prc_master.item_id,item_master.item_name,process_master.process_name,prc_detail.process_ids,prc_process.current_process_id,nxtProcess.process_name AS next_process_name";
+		$queryData['select'] = "prc_accept_log.*,prc_master.prc_number,prc_master.mfg_type,prc_master.item_id,item_master.item_name,process_master.process_name,prc_detail.process_ids,prc_process.current_process_id,nxtProcess.process_name AS next_process_name,IFNULL(company_info.company_alias,'SFT (Forging)') as company_alias,party_master.party_name,employee_master.emp_name,department_master.name as dept_name,prevProcessMaster.process_name as prev_process_name";
 		$queryData['leftJoin']['prc_master'] = "prc_accept_log.prc_id = prc_master.id";
 		$queryData['leftJoin']['prc_detail'] = "prc_accept_log.prc_id = prc_detail.prc_id";
 		$queryData['leftJoin']['item_master'] = "item_master.id = prc_master.item_id";
 		$queryData['leftJoin']['prc_process'] = "prc_process.id = prc_accept_log.accepted_process_id";
 		$queryData['leftJoin']['process_master'] = "process_master.id = prc_process.current_process_id";
 		$queryData['leftJoin']['process_master nxtProcess'] = "nxtProcess.id = prc_process.next_process_id";
+        $queryData['leftJoin']['company_info'] = "company_info.id = prc_accept_log.cm_id";
+        
+        $queryData['leftJoin']['party_master'] = "party_master.id = item_master.party_id";
+        $queryData['leftJoin']['employee_master'] = "employee_master.id = prc_accept_log.created_by";
+        $queryData['leftJoin']['department_master'] = "employee_master.id = employee_master.emp_dept_id";
+		$queryData['leftJoin']['prc_process prevProcess'] = "prevProcess.id = prc_accept_log.prc_process_id";
+		$queryData['leftJoin']['process_master prevProcessMaster'] = "prevProcessMaster.id = prevProcess.current_process_id";
 
 		if(!empty($param['id'])){ $queryData['where']['prc_accept_log.id'] = $param['id']; }
 		if(!empty($param['prc_process_id'])){ $queryData['where']['prc_accept_log.prc_process_id'] = $param['prc_process_id']; }
@@ -1080,13 +1111,16 @@ class SopModel extends MasterModel{
 	public function getBatchData($param = []){
         $issueEntry= $this->transMainModel->getEntryType(['controller'=>'store/issueRequisition']);
     	$data['tableName'] = "stock_transaction";
-		$data['select'] = 'SUM(stock_transaction.qty) AS issue_qty,stock_transaction.batch_no,(CASE WHEN prc_master.mfg_type = "Forging" THEN batch_history.heat_no ELSE stock_transaction.heat_no END) AS heat_no,stock_transaction.item_id,prc_master.id as prc_id,item_kit.qty,item_kit.process_id,item_kit.group_name,item_master.item_name,item_master.uom,prc_master.prc_number,process_master.process_name';
+		$data['select'] = 'SUM(stock_transaction.qty) AS issue_qty,stock_transaction.batch_no,(CASE WHEN prc_master.mfg_type = "Forging" THEN batch_history.heat_no ELSE stock_transaction.heat_no END) AS heat_no,stock_transaction.item_id,prc_master.id as prc_id,item_kit.qty,item_kit.process_id,item_kit.group_name,item_master.item_name,item_master.uom,prc_master.prc_number,process_master.process_name,party_master.party_name';
+		$data['select'] .= ",IFNULL(company_info.company_alias,'SFT (Forging)') as company_alias";
 		$data['join']['prc_master'] = 'prc_master.id= stock_transaction.child_ref_id';
 		$data['join']['prc_detail'] = 'prc_master.id= prc_detail.prc_id'; 
 		$data['leftJoin']['item_kit'] = 'item_kit.item_id= prc_master.item_id AND item_kit.ref_item_id = stock_transaction.item_id AND item_kit.is_delete=0 AND FIND_IN_SET(item_kit.process_id,prc_detail.process_ids) > 0'; 
 		$data['leftJoin']['(SELECT heat_no,party_id,batch_no,item_id FROM batch_history WHERE is_delete = 0 GROUP BY item_id,batch_no) as batch_history '] = " batch_history.batch_no = stock_transaction.batch_no AND stock_transaction.item_id = batch_history.item_id";
+		$data['leftJoin']['party_master'] = 'party_master.id = batch_history.party_id';
 		$data['leftJoin']['process_master'] = 'process_master.id = item_kit.process_id';
 		$data['leftJoin']['item_master'] = 'item_master.id = stock_transaction.item_id';
+        $data['leftJoin']['company_info'] = "company_info.id = stock_transaction.cm_id";
 		$data['where']['stock_transaction.entry_type']  = $issueEntry->id;
 		$data['where']['stock_transaction.child_ref_id'] = $param['prc_id'];
 		

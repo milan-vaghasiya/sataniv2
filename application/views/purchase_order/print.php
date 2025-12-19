@@ -234,7 +234,7 @@
     				?>
 				</table>
 				
-			    <table class="table top-table" style="margin-top:10px;">
+			    <table class="table top-table" style="margin-top:10px;page-break-inside: avoid;">
                     <tr>
                         <th class="text-left">Terms & Conditions :-</th>
                     </tr>

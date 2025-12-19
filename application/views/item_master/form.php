@@ -96,12 +96,21 @@
                 <input type="text" name="mrp" id="mrp" class="form-control calMRP floatOnly" value="<?=(!empty($dataRow->mrp))?$dataRow->mrp:"0"?>">
             </div>  
             
-            <?php if($itmtp == 3): ?>
+             <?php if(in_array($itmtp,[1,3])): ?>
                 <div class="col-md-3 form-group">
-                    <label for="party_id">Supplier</label>
+                    <label for="party_id"><?=(($itmtp == 1) ? "Customer" : "Supplier")?></label>
                     <select name="party_id" id="party_id" class="form-control select2">
-                        <option value="">Select Supplier</option>
-                        <?=getPartyListOption($supplierList,((!empty($dataRow->party_id))?$dataRow->party_id:""))?>
+                        <option value="">Select Party</option>
+                        <?php
+                            foreach($partyList as $row):
+                                $selected = (!empty($dataRow->party_id) && $dataRow->party_id == $row->id)?"selected":"";
+                                if(($row->party_category == 1 && $itmtp == 1)){
+                                    echo '<option value="'.$row->id.'" '.$selected.'>'.$row->party_name.'</option>';
+                                }elseif($row->party_category == 2 && $itmtp == 3){
+                                    echo '<option value="'.$row->id.'" '.$selected.'>'.$row->party_name.'</option>';
+                                }
+                            endforeach;
+                        ?>
                     </select>
                 </div>
             <?php endif; ?>

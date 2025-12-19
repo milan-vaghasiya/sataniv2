@@ -117,7 +117,7 @@ function getMasterDtHeader($page){
     $data['customOption'][] = ["name"=>"#","sortable"=>"FALSE","textAlign"=>"center"]; 
     $data['customOption'][] = ["name"=>"Type"];
     $data['customOption'][] = ["name"=>"Title"];
-
+    
     /* Services Header */
     $data['services'][] = ["name"=>"Action","class"=>"text-center no_filter noExport","sortable"=>FALSE,"style"=>"width:5%;"];
 	$data['services'][] = ["name"=>"#","class"=>"text-center no_filter","sortable"=>FALSE,"style"=>"width:5%;"];
@@ -235,6 +235,7 @@ function getProductData($data){
     }
     
     $action = getActionButton($inspectionButton.$revisionButton.$editButton.$deleteButton);
+
     
     return [$action,$data->sr_no,$item_code,$data->item_name,$data->category_name,$data->unit_name,$data->hsn_code,floatVal($data->gst_per),floatVal($data->price)];
 }

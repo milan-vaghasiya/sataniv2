@@ -87,10 +87,11 @@ class ProductionReportModel extends MasterModel{
         $queryData = array();          
 		$queryData['tableName'] = "prc_log";
 		
-		$queryData['select'] = "prc_log.*,employee_master.emp_name,shift_master.shift_name,prc_master.item_id,prc_master.prc_number, machine.item_code as machine_code, machine.item_name as machine_name, item_master.item_name, item_master.item_code,process_master.process_name,product_process.cycle_time,rejection_log.rr_reason,rejection_comment.remark as rej_reason,prc_log.qty as ok_qty,prc_log.rej_qty as rej_qty,party_master.party_name"; 
+		$queryData['select'] = "prc_log.*, employee_master.emp_name, shift_master.shift_name, prc_master.item_id, prc_master.prc_number, machine.item_code as machine_code, machine.item_name as machine_name, item_master.item_name, item_master.item_code, process_master.process_name, product_process.cycle_time, rejection_log.rr_reason,rejection_comment.remark as rej_reason, prc_log.qty as ok_qty,prc_log.rej_qty as rej_qty, party_master.party_name, department_master.name as dept_name"; 
 
 		$queryData['leftJoin']['item_master machine'] = "machine.id = prc_log.processor_id";
 		$queryData['leftJoin']['party_master'] = "party_master.id = prc_log.processor_id";
+		$queryData['leftJoin']['department_master'] = "department_master.id = prc_log.processor_id";
 		$queryData['leftJoin']['employee_master'] = "employee_master.id = prc_log.operator_id";
         $queryData['leftJoin']['shift_master'] = "shift_master.id = prc_log.shift_id";
         $queryData['leftJoin']['prc_master'] = "prc_master.id = prc_log.prc_id";
@@ -100,13 +101,14 @@ class ProductionReportModel extends MasterModel{
         $queryData['leftJoin']['rejection_log'] = "rejection_log.log_id = prc_log.id";
 		$queryData['leftJoin']['rejection_comment'] = "rejection_comment.id = rejection_log.rr_reason";
 
-		if(!empty($postData['process_id'])){ 
-			$queryData['where']['prc_log.process_id'] = $postData['process_id'];
-		}
+		if(!empty($postData['process_id'])){ $queryData['where']['prc_log.process_id'] = $postData['process_id']; }
 		if(!empty($postData['from_date']) && !empty($postData['to_date'])){ 
 			$queryData['customWhere'][] = "prc_log.trans_date BETWEEN '".$postData['from_date']."' AND '".$postData['to_date']."'";
 		}
+		
         $queryData['where']['prc_log.process_id >'] = 0;
+        
+		$queryData['order_by']['prc_log.trans_date'] = 'ASC'; 
 
 		$result = $this->rows($queryData);
 		

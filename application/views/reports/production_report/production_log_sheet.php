@@ -6,39 +6,34 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="row">
-                            <div class="col-md-7">
+                            <div class="col-md-4">
                                 <h4 class="card-title pageHeader"><?=$pageHeader?></h4>
                             </div>  
-							
-                            <div class="col-md-5 col-lg-5">  
-                                <div class="row">
-                                    <div class="col-md-6 col-lg-6 mb-1">
-                                        <select class="form-control single-select select2 req" name="process_id" id="process_id">
-                                            <option value="">All Set up</option>
-                                            <?php 
-                                                if(!empty($processList)){
-                                                    foreach($processList as $row){
-                                                        echo '<option value="'.$row->id.'">'.$row->process_name.'</option>';
-                                                    }
-                                                }
-                                            ?>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6 col-lg-6 mb-1">
-                                        <div class="input-group">
-                                            <input type="date" name="from_date" id="from_date" class="form-control" value="<?=$startDate?>">
-                                            <input type="date" name="to_date" id="to_date" class="form-control" value="<?=$endDate?>">
-                                        
-                                            <div class="input-group-append">
-                                                <button type="button" class="btn waves-effect waves-light btn-success float-right loadData" title="Load Data">
-                                                    <i class="fas fa-sync-alt"></i> Load
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="error toDate"></div>
+                            <div class="col-md-4">
+                                <select class="form-control single-select select2 req" name="process_id" id="process_id">
+                                    <option value="">ALL Setup</option>
+                                    <?php 
+                                        if(!empty($processList)){
+                                            foreach($processList as $row){
+                                                echo '<option value="'.$row->id.'">'.$row->process_name.'</option>';
+                                            }
+                                        }
+                                    ?>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <input type="date" name="from_date" id="from_date" class="form-control" value="<?=$startDate?>">
+                                    <input type="date" name="to_date" id="to_date" class="form-control" value="<?=$endDate?>">
+                                
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn waves-effect waves-light btn-success float-right loadData" title="Load Data">
+                                            <i class="fas fa-sync-alt"></i> Load
+                                        </button>
                                     </div>
                                 </div>
-                            </div>     
+                                <div class="error toDate"></div>
+                            </div>
                         </div>                                         
                     </div>
                     <div class="card-body reportDiv" style="min-height:75vh">

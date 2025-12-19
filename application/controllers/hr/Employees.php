@@ -511,6 +511,15 @@ class Employees extends MY_Controller{
         endif;
     }
     
+    public function saveManualEmpInDevice(){
+		$data=$this->input->post();
+        if(empty($data['id'])):
+            $this->printJson(['status'=>0,'message'=>'Somthing went wrong...Please try again.']);
+        else:
+            $this->printJson($this->employee->addManualEmpInDevice($data));
+        endif;
+	}
+    
     public function removeEmployeeInDevice()
     {
         $data=$this->input->post();

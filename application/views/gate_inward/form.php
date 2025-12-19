@@ -36,7 +36,7 @@
 
             <div class="col-md-3 form-group">
                 <label for="po_id">Purchase Order</label>
-                <select id="po_id" class="form-control select2 req">
+                <select id="po_id" class="form-control select2">
                     <option value="">Select Purchase Order</option>
                 </select>
                 <div class="error po_id"></div>

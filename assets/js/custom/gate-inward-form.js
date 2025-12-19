@@ -45,11 +45,11 @@ $(document).ready(function(){
         if(formData.qty == "" || parseFloat(formData.qty) == 0){ 
             $('.qty').html("Qty is required.");
         }
-        if($('#party_id :selected').val() != 77){
+        /*if($('#party_id :selected').val() != 77){
             if(formData.po_id == ""){ 
                 $('.po_id').html("PO is required.");
             }
-        }
+        }*/
         var errorCount = $('.error:not(:empty)').length;
 
 		if(errorCount == 0){

@@ -239,7 +239,7 @@
                                             <button type="button" class="dropdown-item" onclick="modalAction(<?=$conParam?>);"><i class="fa fa-plus"></i> Consumable</button>
 
                                             <button type="button" class="dropdown-item" onclick="modalAction(<?=$machineParam?>);"><i class="fa fa-plus"></i> Machineries</button>
-
+                                            
                                             <button type="button" class="dropdown-item" onclick="modalAction(<?=$serviceParam?>);"><i class="fa fa-plus"></i> Service Item</button>
                                         </div>
                                     </span>

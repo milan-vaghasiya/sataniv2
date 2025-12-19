@@ -6,7 +6,7 @@ class AutoCron extends CI_Controller{
     }
 
 	/*** Created By JP @09-12-2022 AutoCron/updateShiftlogV1 ***/
-    /*
+    
 	public function updateShiftlogV1(){
         
 		$this->db->select("employee_master.id,employee_master.shift_id,shift_master.latest_id,employee_master.is_active");
@@ -53,7 +53,7 @@ class AutoCron extends CI_Controller{
 		echo "INSERTED : ".$inserted." | UPDATED : ".$updated." | DELETED : ".$deleted;
         return true;
     }
-	*/
+	
 	
     public function updateShiftlog(){
         

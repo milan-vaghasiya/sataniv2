@@ -26,7 +26,11 @@ class StoreReport extends MY_Controller{
 
     public function getStockRegisterData(){
         $data = $this->input->post();
-        $item_type = $data['item_type'];        
+        
+        
+        //$data['stock_where'] = (!empty($data['item_type']) && $data['item_type'] == 99) ? 'stock_transaction.location_id = '.$this->FORGE_STORE->id : 'stock_transaction.location_id != '.$this->FORGE_STORE->id;
+        //$data['stock_where'] = (!empty($data['item_type']) && $data['item_type'] == 99) ? 'stock_transaction.location_id = '.$this->FORGE_STORE->id : (!empty($data['location_id']) ? 'stock_transaction.location_id = '.$data['location_id'] : 'stock_transaction.location_id != '.$this->FORGE_STORE->id);
+        
         $data['location_id'] = $this->storeLocation->getLocationIds($data);
 
         if (!empty($data['item_type']) && $data['item_type'] == 99) {
@@ -36,7 +40,7 @@ class StoreReport extends MY_Controller{
         } else {
             $data['stock_where'] = 'stock_transaction.location_id != ' . $this->FORGE_STORE->id;
         }
-
+        $item_type = $data['item_type'];
         $data['item_type'] = (!empty($data['item_type']) && $data['item_type'] == 99) ? 1 : $data['item_type'];
         
         $result = $this->storeReport->getStockRegisterData($data);
@@ -54,6 +58,7 @@ class StoreReport extends MY_Controller{
                 <td class="text-left">
 					<a href="'.base_url("reports/storeReport/itemHistory/".$row->item_id).'" target="_blank" datatip="History" flow="left">'.$row->item_name.'</a>
 				</td>
+                <td class="text-left">'.$row->category_name.'</td>
                 <td  class="text-right">
                     '.$batch_qty.'
 				</td>

@@ -121,8 +121,8 @@ function getStoreDtHeader($page){
     $data['inspection'][] = ["name" => "Action", "textAlign" => "center"];
     $data['inspection'][] = ["name" => "#", "textAlign" => "center"];
     $data['inspection'][] = ["name" => "Issue Number"];
-    $data['inspection'][] = ["name" => "Issue To"];
     $data['inspection'][] = ["name" => "Date"];
+    $data['inspection'][] = ["name" => "Issue To"];
     $data['inspection'][] = ["name" => "Item Name"];
     $data['inspection'][] = ["name" => "Total Qty"];
     $data['inspection'][] = ["name" => "Batch No"];
@@ -357,7 +357,7 @@ function getInspectionData($data) {
         $inspectButton = '<a class="btn btn-warning btn-edit permission-modify" href="javascript:void(0)" datatip="Inspect" flow="down" onclick="modalAction('.$inspectParam.');"><i class="fa fa-search" ></i></a>';
     }
     $action = getActionButton($inspectButton);
-    return [$action,$data->sr_no,$data->issue_number,$data->issue_to,formatDate($data->trans_date),$data->item_name,$data->total_qty,$data->batch_no,$data->remark];
+    return [$action,$data->sr_no,$data->issue_number,formatDate($data->trans_date),$data->issue_to,$data->item_name,$data->total_qty,$data->batch_no,$data->remark];
 }
 
 /* Prc Material Issue Table Data */

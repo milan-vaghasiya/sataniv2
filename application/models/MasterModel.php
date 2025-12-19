@@ -532,9 +532,11 @@ class MasterModel extends CI_Model{
         //     $this->db->where_in($data['tableName'].'.cm_id',[$this->cm_id,0]);
         // endif;
 		if(!empty($data['cm_id'])):
-            $this->db->where_in($data['tableName'].'.cm_id',[$data['cm_id'],0]);
+		    if($data['cm_id'] != 'ALL'):
+                $this->db->where_in($data['tableName'].'.cm_id',[$data['cm_id'],0]);
+            endif;
         else:
-		    if(!empty($this->CMID)){$this->db->where_in($data['tableName'].'.cm_id',[$this->CMID,0]);}
+		    if(!empty($this->CMID)){ $this->db->where_in($data['tableName'].'.cm_id',[$this->CMID,0]); }
         endif;
 		
         $result = $this->db->get($data['tableName'])->result();

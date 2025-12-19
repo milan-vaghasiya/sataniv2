@@ -1,7 +1,7 @@
 <?php 
 class StockVerificationModel extends MasterModel
 {
-    // private $itemMaster = "item_master";
+    private $itemMaster = "item_master";
 	private $stockVerification = "stock_verification";
 	private $stockTrans = "stock_transaction";
 
@@ -43,22 +43,17 @@ class StockVerificationModel extends MasterModel
 					'physical_qty' => $value,
 					'variation_qty' => $varQty,
 					'reason' => $data['reason'][$key],
-					'created_by' => $this->loginId   
+					'created_by' => $this->loginId
 				];
 				$verifyData = $this->store($this->stockVerification,$verificationData);
 
-				/*** UPDATE STOCK TRANSACTION DATA ***/  
+				/*** UPDATE STOCK TRANSACTION DATA ***/
 				if($varQty != 0){
 					if($varQty > 0){ $transType = 1; }else{ $transType = -1; }
 					$stockQueryData['id']="";
 					$stockQueryData['location_id'] = $data['location_id'][$key];
 					if(!empty($data['batch_no'][$key])){$stockQueryData['batch_no'] = $data['batch_no'][$key];}
-
-					if(!empty($data['heat_no'][$key])){
-						$stockQueryData['heat_no'] = $data['heat_no'][$key];
-					}else{
-						$stockQueryData['heat_no'] = null;
-					}
+					if(!empty($data['heat_no'][$key])){$stockQueryData['heat_no'] = $data['heat_no'][$key];}else{$stockQueryData['heat_no']=NULL;}
 					$stockQueryData['p_or_m'] = $transType;
 					$stockQueryData['item_id'] = $data['item_id'];
 					$stockQueryData['qty'] = abs($varQty);

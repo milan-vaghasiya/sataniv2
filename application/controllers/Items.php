@@ -2,7 +2,6 @@
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-
 class Items extends MY_Controller{
     private $indexPage = "item_master/index";
     private $form = "item_master/form";
@@ -14,6 +13,7 @@ class Items extends MY_Controller{
     private $rmInspectionForm = "item_master/rm_inspection";
     private $productDetails ="item_master/product_details";
     private $serviceForm = "item_master/service_form";
+
 
     public function __construct(){
 		parent::__construct();
@@ -52,8 +52,7 @@ class Items extends MY_Controller{
         $this->data['customFieldList'] = $this->customField->getCustomFieldList(); 
         $this->data['customOptionList'] = $this->customOption->getMasterList(); 
         $this->data['materialGrade'] = $this->materialGrade->getMaterialGrades();
-        $this->data['supplierList'] = $this->party->getPartyList(['party_category'=>2]); // 06-08-2024
-        
+        $this->data['partyList'] = $this->party->getPartyList(['party_category'=>'1,2']);
         if($data['item_type'] == 8){
             $this->load->view($this->serviceForm,$this->data);
         }else{
@@ -158,8 +157,7 @@ class Items extends MY_Controller{
         $this->data['customOptionList'] = $this->customOption->getMasterList();  
         $this->data['customData'] = $this->item->getItemUdfData(['item_id'=>$data['id']]);
         $this->data['materialGrade'] = $this->materialGrade->getMaterialGrades();
-        $this->data['supplierList'] = $this->party->getPartyList(['party_category'=>2]); // 06-08-2024
-
+        $this->data['partyList'] = $this->party->getPartyList(['party_category'=>'1,2']);
         if($itemDetail->item_type == 8){
             $this->load->view($this->serviceForm,$this->data);
         }else{

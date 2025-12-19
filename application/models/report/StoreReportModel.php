@@ -6,8 +6,9 @@ class StoreReportModel extends MasterModel{
     public function getStockRegisterData($data){
         $queryData = array();
         $queryData['tableName'] = $this->itemMaster;
-        $queryData['select'] = "item_master.id as item_id,item_master.item_code,item_master.item_name,ifnull(st.stock_qty,0) as stock_qty";
-
+        $queryData['select'] = "item_master.id as item_id,item_master.item_code,item_master.item_name,item_category.category_name,IFNULL(st.stock_qty,0) as stock_qty";
+        $queryData['leftJoin']['item_category'] = "item_category.id = item_master.category_id";
+        
         if(!empty($data['stock_where'])){
             $queryData['leftJoin']['(SELECT SUM(qty * p_or_m) as stock_qty,item_id FROM stock_transaction WHERE is_delete = 0 AND '.$data['stock_where'].' GROUP BY item_id) as st'] = "item_master.id = st.item_id";
         }else{

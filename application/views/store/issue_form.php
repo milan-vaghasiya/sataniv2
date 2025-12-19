@@ -67,7 +67,7 @@
                 </div>
                 <div class="col-md-4 form-group">
                     <label for="remark">Request Remark</label>
-                    <input type="text" id="remark" class="form-control" value="<?=(!empty($dataRow->remark) ? $dataRow->remark : "")?>" readOnly/>
+                    <input type="text" id="remark" class="form-control" value="<?=(!empty($dataRow->remark) ? $dataRow->remark : "")?>" />
                 </div>
             </div>
 

@@ -53,31 +53,33 @@
                         <th style="width:5%;">#</th>
                         <th>Device</th>
                         <th>Location</th>
-
-                        <th class="text-center" style="width:10%;">Action</th>
+                        <th class="text-center" style="width:10%;">Auto Add</th>
+                        <th class="text-center" style="width:20%;">Manual Add</th>
                     </tr>
                 </thead>
                 <tbody id="leaveBody">
                     <?php
                     $deviceArray = explode(',', $dataRow->device_id);
                     if (!empty($deviceList)) :
-                        $i = 1;
+                        $i = 1; $manualButton="";
                         foreach ($deviceList as $row) :
                             $deviceButton="";
                             if (in_array($row->id, $deviceArray)) {
                                 $deviceButton = '<a class="btn btn-outline-danger btn-sm btn-delete" href="javascript:void(0)" data-device_srno="' . $row->device_srno . '" onclick="removeEmployeeInDevice(' . $row->id . ',' . $emp_id . ');" datatip="Remove In Device" flow="down"><i class="fa fa-trash"></i></a>';
                                 //$deviceButton ='<labe class="text-facebook">Already Added In Device</label>';
-
+                                $manualButton="";
                             } else {
                                 $deviceParm = $row->device_srno . ',' . $emp_id;
                                 $deviceButton = '<a class="btn btn-outline-info btn-sm btn-delete" href="javascript:void(0)" data-device_srno="' . $row->device_srno . '" onclick="addEmpInDevice(' . $row->id . ',' . $emp_id . ');" datatip="Add In Device" flow="down"><i class="fa fa-desktop"></i></a>';
     
+                                $manualButton = '<a class="btn btn-outline-info btn-sm btn-delete" href="javascript:void(0)" data-device_srno="' . $row->device_srno . '" onclick="addManualEmpInDevice(' . $row->id . ',' . $emp_id . ');" datatip="Add Manual" flow="down"><i class="fa fa-desktop"></i></a>';
                             }
                             echo '<tr id="' . $row->id . '">
                             <td class="text-center">' . $i++ . '</td>
                             <td>' . $row->device_srno . '</td>
                             <td>' . $row->device_location . '</td>
-                            <td style="width:30%">' . $deviceButton . '</td>
+                            <td class="text-center">'.$deviceButton.'</td>
+							<td class="text-center">'.$manualButton.'</td>
                         </tr>';
                         endforeach;
                     else :
@@ -126,6 +128,41 @@ function addEmpInDevice(id, emp_id) {
 		if (result.isConfirmed){
 			$.ajax({
 				url: base_url + controller + '/saveEmployeeInDevice',
+				data: send_data,
+				type: "POST",
+				dataType: "json",
+				success: function(data) {
+					if (data.status == 0) {
+						Swal.fire( 'Sorry...!', data.message, 'error' );
+					} else {
+						initTable();
+						Swal.fire( 'Success', data.message, 'success' );
+					}
+
+				}
+			});
+			
+		}
+	});
+}
+
+function addManualEmpInDevice(id, emp_id) {
+	var send_data = {
+		id: id,
+		emp_id: emp_id
+	};
+	Swal.fire({
+		title: 'Confirm!',
+		text: "Are you sure want to add manual in device ?",
+		icon: 'warning',
+		showCancelButton: true,
+		confirmButtonColor: '#3085d6',
+		cancelButtonColor: '#d33',
+		confirmButtonText: 'Yes, delete it!',
+	}).then(function(result) {
+		if (result.isConfirmed){
+			$.ajax({
+				url: base_url + controller + '/saveManualEmpInDevice',
 				data: send_data,
 				type: "POST",
 				dataType: "json",

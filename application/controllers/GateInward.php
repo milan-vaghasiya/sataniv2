@@ -129,7 +129,7 @@ class GateInward extends MY_Controller{
         endif;
     }
     
-	public function ir_print($id){
+	public function ir_printOld($id){
         $grnTransData = $this->gateInward->getInwardItem(['ids'=>$id, 'multi_rows'=>1]);
         $companyData = $this->masterModel->getCompanyInfo();  
 		$i=1;
@@ -252,6 +252,127 @@ class GateInward extends MY_Controller{
                 $mpdf->WriteHTML($pdfData);
             }
         }  
+		$mpdf->Output($pdfFileName, 'I');
+    }
+    
+    public function ir_print($id){
+        $grnTransData = $this->gateInward->getInwardItem(['ids'=>$id, 'multi_rows'=>1]);
+        $companyData = $this->masterModel->getCompanyInfo();  
+		$i=1;
+        $logo = (!empty($companyData->print_header))?base_url("assets/uploads/company_logo/".$companyData->company_logo):base_url('assets/images/logo.png');
+       
+        $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => [100, 68]]);
+		$pdfFileName = 'IR_PRINT.pdf';
+		$stylesheet = file_get_contents(base_url('assets/css/pdf_style.css'));
+        $mpdf->WriteHTML($stylesheet, 1);
+
+        if(!empty($grnTransData)){
+            foreach($grnTransData as $irData){
+                if(empty($irData->trans_status)){
+                    
+                    $qty = (!empty($irData->ok_qty) && $irData->ok_qty > 0) ? $irData->ok_qty : $irData->qty;
+
+                    $itemList ='<table class="table">
+                            <tr>
+                                <td><img src="'.$logo.'" style="max-height:40px;"></td>
+                                <td class="text-right"><b>Material Status Card </b><br><small>(FQC26B(00/01.01.24))</small></td>
+                            </tr>
+                        </table>
+                        <table class="table top-table-border">
+                            <tr>
+                                <td>Card No. <br><b>'.(!empty($irData->trans_number)?$irData->trans_number:'-').'</b></td>
+						        <td>Date <br><b>'.(!empty($irData->trans_date)?formatDate($irData->trans_date):'-').'</b></td>
+                            </tr>
+                            <tr>
+                                <td>Process Unit<br><b>'.(!empty($irData->company_alias)?$irData->company_alias:'-').'</b></td>
+						        <td>Department <br><b>Store</b></td>
+                            </tr>
+                            <tr>
+						        <td>Customer <br><b>-</b></td>
+                                <td>Supplier <br><b>'.(!empty($irData->party_name)?$irData->party_name:'-').'</b></td>
+                            </tr>
+                            <tr>
+                                <td>Type & Part<br><b>'.(!empty($irData->item_name)?$irData->item_name:'-').'</b></td>
+						        <td>Batch/Heat No <br><b>'.(!empty($irData->heat_no)?$irData->heat_no:'-').'</b></td>
+                            </tr>
+                            <tr>
+                                <td>Material Qty<br><b>'.$qty.' ('.$irData->unit_name.')</b></td>
+						        <td>Material Stage<br><b>'.(!empty($irData->location_name)?$irData->location_name:'-').'</b></td>
+                            </tr>
+                            <tr>
+                                <td>Material Process<br><b>GRN</b></td>
+						        <td>Material Status<br><b>QC Pending</b></td>
+                            </tr>
+                            <tr>
+                                <td>Operator/Inspector<br><b>-</b></td>
+						        <td>Supervisor<br><b></b>-</td>
+                            </tr>
+                            <tr>
+                                <th colspan="2" class="text-center" style="height:30mm;font-size:14px">QC PENDING</th>
+                            </tr>
+                        </table>';
+                        $i++;
+                }else{
+                    $batchData = $this->gateInward->getItemWiseBatchList($irData->id);
+                    if(!empty($batchData)){
+                        foreach($batchData as $batch):
+                            $qrIMG = base_url('assets/uploads/iir_qr/'.$irData->id.'.png');
+                            if(!file_exists($qrIMG)){
+                                $qrText = $batch->item_id.'~'.$batch->location_id.'~'.$batch->batch_no;
+                                $file_name = $irData->id;
+                                $qrIMG = base_url().$this->getQRCode($qrText,'assets/uploads/iir_qr/',$file_name);
+                            }
+                            
+                            $itemList ='<table class="table">
+                                <tr>
+                                    <td><img src="'.$logo.'" style="max-height:40px;"></td>
+                                    <td class="text-right"><b>Material Status Card </b><br><small>(FQC26B(00/01.01.24))</small></td>
+                                </tr>
+                            </table>
+                            <table class="table top-table-border">
+                                <tr>
+                                    <td>Card No. <br><b>'.(!empty($irData->trans_number)?$irData->trans_number:'-').'</b></td>
+    						        <td>Date <br><b>'.(!empty($irData->trans_date)?formatDate($irData->trans_date):'-').'</b></td>
+                                </tr>
+                                <tr>
+                                    <td>Process Unit<br><b>'.(!empty($irData->company_alias)?$irData->company_alias:'-').'</b></td>
+    						        <td>Department <br><b>Store</b></td>
+                                </tr>
+                                <tr>
+    						        <td>Customer <br><b>-</b></td>
+                                    <td>Supplier <br><b>'.(!empty($irData->party_name)?$irData->party_name:'-').'</b></td>
+                                </tr>
+                                <tr>
+                                    <td>Type & Part<br><b>'.(!empty($irData->item_name)?$irData->item_name:'-').'</b></td>
+    						        <td>Batch/Heat No <br><b>'.(!empty($irData->heat_no)?$irData->heat_no:'-').'</b></td>
+                                </tr>
+                                <tr>
+                                    <td>Material Qty<br><b>'.$batch->qty.' ('.$irData->unit_name.')</b></td>
+						            <td>Material Stage<br><b>'.(!empty($irData->location_name)?$irData->location_name:'-').'</b></td>
+                                </tr>
+                                <tr>
+                                    <td>Material Process<br><b>GRN</b></td>
+    						        <td>Material Status<br><b>QC Ok</b></td>
+                                </tr>
+                                <tr>
+                                    <td>Operator/Inspector<br><b>-</b></td>
+    						        <td>Supervisor<br><b></b>-</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" class="text-center"><img src="'.$qrIMG.'" style="height:30mm;"></td>
+                                </tr>
+                            </table>';
+                            $i++;
+                        endforeach;
+                    }
+                }
+                $pdfData = '<div style="text-align:center;float:left;padding:1mm 1mm;rotate: -90;position: absolute;bottom:1mm;width:65mm;height:95mm;">' . $itemList . '</div>';
+
+                $mpdf->AddPage('P','','','','',1,1,1,1,1,1);
+                $mpdf->WriteHTML($pdfData);
+            }
+        }  
+        
 		$mpdf->Output($pdfFileName, 'I');
     }
 	
@@ -607,11 +728,11 @@ class GateInward extends MY_Controller{
 		$mpdf->Output($pdfFileName,'I');
 	}
 	
-	public function printMaterialTag($id='') {
+	public function printMaterialTagOld($id='') {
         $grnTransData = $this->gateInward->getInwardItem(['ids'=>$id, 'multi_rows'=>1]);
 		$logo = base_url('assets/images/logo.png');
 
-        $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => [100, 60]]);
+        $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => [100, 68]]);
         $pdfFileName = str_replace(" ", "_", str_replace("/", " ", 'material_stock_tag'.time())) . '.pdf';
         $stylesheet = file_get_contents(base_url('assets/css/pdf_style.css'));
         $mpdf->WriteHTML($stylesheet, 1);
@@ -656,6 +777,77 @@ class GateInward extends MY_Controller{
 
                 $pdfData = '<div style="width:97mm;height:50mm;text-align:center;float:left;padding:0mm 0.7mm;">' . $itemList . '</div>';
                 $mpdf->AddPage('P', '', '', '', '', 1, 1, 2, 2, 1, 1);
+                $mpdf->WriteHTML($pdfData);
+            }
+        }
+		
+        if(!empty($id)){
+            $mpdf->Output($pdfFileName, 'I');
+        }else{
+            $pdfOutputPath = 'assets/uploads/sop/' . $pdfFileName;
+            $mpdf->Output($pdfOutputPath, 'F'); 
+            $pdfUrl = base_url($pdfOutputPath);
+            $this->printJson(['status'=>1,'url'=>$pdfUrl]);
+        }        
+	}
+	
+	public function printMaterialTag($id='') {
+        $grnTransData = $this->gateInward->getInwardItem(['ids'=>$id, 'multi_rows'=>1]);
+		$logo = base_url('assets/images/logo.png');
+
+        $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => [100, 68]]);
+        $pdfFileName = str_replace(" ", "_", str_replace("/", " ", 'material_stock_tag'.time())) . '.pdf';
+        $stylesheet = file_get_contents(base_url('assets/css/pdf_style.css'));
+        $mpdf->WriteHTML($stylesheet, 1);
+
+        if(!empty($grnTransData)){
+            $qrIMG = "";
+            foreach($grnTransData as $row){
+                $qrText = encodeURL(['item_id'=>$row->item_id,'batch_no'=>$row->batch_no,'heat_no'=>$row->heat_no,'location_id'=>$row->location_id,'qty'=>$row->qty,'type'=>'material_stock_tag']);
+                $file_name = 'mtr_stock_tag'.str_replace(" ", "_", str_replace("/", " ", $row->item_id.$row->batch_no.$row->heat_no.$row->location_id));
+                $qrIMG = base_url().$this->getQRCode($qrText,'assets/uploads/iir_qr/',$file_name);
+
+                $itemList ='<table class="table" style="font-size:0.5rem;">
+                        <tr>
+                            <td><img src="'.$logo.'" style="max-height:40px;"></td>
+                            <td class="text-right"><b>Material Status Card </b><br><small>(FQC26B(00/01.01.24))</small></td>
+                        </tr>
+                    </table>
+                    <table class="table top-table-border">
+                        <tr>
+                            <td>Card No. <br><b>'.(!empty($row->trans_number)?$row->trans_number:'-').'</b></td>
+                            <td>Date <br><b>'.formatDate($row->trans_date).'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Process Unit<br><b>'.(!empty($row->company_alias)?$row->company_alias:'-').'</b></td>
+                            <td>Department <br><b>'. (!empty($row->store_name) ? '['.$row->store_name.'] ' : "").(!empty($row->location_name) ? $row->location_name : "").'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Customer <br><b>-</b></td>
+                            <td>Supplier <br><b>'.(!empty($row->party_name)?$row->party_name:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Type & Part<br><b>'.(!empty($row->item_name)?$row->item_name:'-').'</b></td>
+                            <td>Batch/Heat No <br><b>'.(!empty($data->batch_no)?$data->batch_no:'-').(!empty($row->heat_no)?'/'.$row->heat_no:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Material Qty<br><b>'.$row->qty.' ('.$row->unit_name.')</b></td>
+                            <td>Material Stage<br><b>-</b></td>
+                        </tr>
+                        <tr>
+                            <td>Material Process<br><b>Material Stock</b></td>
+                            <td>Material Status<br><b>-</b></td>
+                        </tr>
+                        <tr>
+                            <td>Operator/Inspector<br><b>-</b></td>
+                            <td>Supervisor<br><b></b>-</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="text-center"><img src="'.$qrIMG.'" style="height:30mm;"></td>
+                        </tr>
+                    </table>';
+        $pdfData = '<div style="text-align:center;float:left;padding:1mm 1mm;rotate: -90;position: absolute;bottom:1mm;width:65mm;height:95mm;">' . $itemList . '</div>';
+                $mpdf->AddPage('P', '', '', '', '', 1, 1, 1, 1, 1, 1);
                 $mpdf->WriteHTML($pdfData);
             }
         }

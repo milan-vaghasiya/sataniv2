@@ -654,6 +654,17 @@
     								$oldQ['where']['attendance_date'] = $currentDate;
     								$oldQ['where']['is_delete'] = 0;
     								$oldData = $this->row($oldQ);
+    								
+    								if(!empty($oldData)){ 
+    								    $oldQ2['tableName'] = $this->attendanceLogSummary;
+        								$oldQ2['select'] = "id";
+        								$oldQ2['where']['id != '] = $oldData->id;
+        								$oldQ2['where']['emp_id'] = $aRow->emp_id;
+        								$oldQ2['where']['attendance_date'] = $currentDate;
+        								$oldQ2['where']['is_delete'] = 0;
+        								$oldQ2['update']['is_delete'] = 5;
+        								$this->setValue($oldQ2);
+    								}
     
     								//$aRow = (object) $aRow;
     								$alogSummaryData = [
@@ -838,6 +849,7 @@
 			if(!empty($postData['dept_id'])){$aData['where']['emp.emp_dept_id'] = $postData['dept_id'];}
 			if(!empty($postData['emp_type'])){$aData['where_in']['emp.emp_type'] = $postData['emp_type'];}
 			if(!empty($postData['emp_unit_id'])){ $aData['where']['emp.unit_id'] = $postData['emp_unit_id']; }
+			$adata['cm_id'] = 'ALL';
 			$aData['order_by']['alog_summary.emp_code'] = 'ASC';
 			$aData['order_by']['alog_summary.attendance_date'] = 'ASC';
 			$attendanceData = $this->rows($aData);

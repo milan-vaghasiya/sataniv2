@@ -32,6 +32,11 @@ class GateInwardModel extends masterModel{
 
             $data['where']['grn_trans.trans_status'] = $data['trans_status'];
             $data['where']['grn_trans.entry_type'] = $this->data['entryData']->id;
+            
+            if(!empty($data['trans_status'])):
+                $data['where']['grn_master.trans_date >='] = $this->startYearDate;
+                $data['where']['grn_master.trans_date <='] = $this->endYearDate;
+            endif;
         endif;
 
         $data['leftJoin']['party_master'] = "party_master.id = grn_master.party_id";
@@ -265,13 +270,14 @@ class GateInwardModel extends masterModel{
 
     public function getInwardItem($data){
         $queryData['tableName'] = $this->grn_trans;
-		$queryData['select'] = "grn_trans.*,item_master.item_code,item_master.item_name,item_master.stock_type,location_master.location as location_name,trans_main.trans_number as po_no,grn_master.trans_number,grn_master.trans_date,party_master.party_name,grn_master.inv_no,grn_master.inv_date,grn_master.trans_prefix,grn_master.trans_no,unit_master.unit_name,location_master.store_name";
+		$queryData['select'] = "grn_trans.*,item_master.item_code,item_master.item_name,item_master.stock_type,location_master.location as location_name,trans_main.trans_number as po_no,grn_master.trans_number,grn_master.trans_date,party_master.party_name,grn_master.inv_no,grn_master.inv_date,grn_master.trans_prefix,grn_master.trans_no,unit_master.unit_name,location_master.store_name,IFNULL(company_info.company_alias,'SFT (Forging)') as company_alias";
         $queryData['leftJoin']['item_master'] = "item_master.id = grn_trans.item_id";
         $queryData['leftJoin']['unit_master'] = "item_master.unit_id = unit_master.id";
         $queryData['leftJoin']['location_master'] = "location_master.id = grn_trans.location_id";
         $queryData['leftJoin']['trans_main'] = "trans_main.id = grn_trans.po_id";
         $queryData['leftJoin']['grn_master'] = "grn_master.id = grn_trans.mir_id";
         $queryData['leftJoin']['party_master'] = "party_master.id = grn_master.party_id";
+        $queryData['leftJoin']['company_info'] = "company_info.id = grn_master.cm_id";
         
         if (!empty($data['id'])) { $queryData['where']['grn_trans.id'] = $data['id']; }
 

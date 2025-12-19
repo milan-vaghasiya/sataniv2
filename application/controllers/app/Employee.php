@@ -12,7 +12,7 @@ class Employee extends MY_Controller
 		$this->data['headData']->appMenu = "monthlyAttendanceSummary";
 		$this->data['month'] = $month;
 
-		$empData = $this->employee->getEmployee(['id'=>$this->loginId]);
+		$empData = $this->employee->getEmployee(['id'=>$this->loginId]); 
 		$duration = [];
 		if($month == 1){
 			$duration[0] = date("Y-m-01");
@@ -25,8 +25,11 @@ class Employee extends MY_Controller
 		set_time_limit(0);
 		if(!empty($duration)){
 			$biomatric_id = $empData->biomatric_id;
-			$empAttendanceLog = $this->biometric->getDateWiseSummaryV2(['from_date'=>$duration[0],'to_date'=>$duration[1],'emp_code'=>$biomatric_id]);
-			$companyData = $this->attendance->getCompanyInfo();
+			$empAttendanceLog = [];
+			if(!empty($empData->biomatric_id)){
+			    $empAttendanceLog = $this->biometric->getDateWiseSummaryV2(['from_date'=>$duration[0],'to_date'=>$duration[1],'emp_code'=>$biomatric_id]);
+			}
+			$companyData = $this->attendance->getCompanyInfo(); 
 			$current_month  = date("m");
 			$FromDate = date("Y-m-d",strtotime($duration[0]));
 			$ToDate  = date("Y-m-d",strtotime($duration[1]));			

@@ -573,10 +573,30 @@ class EmployeeModel extends MasterModel{
         }	
     }
     
+    public function addManualEmpInDevice($data = array()){
+		try{
+			$empData = $this->getEmployee(['id'=>$data['emp_id']]);
+			$empDevice = (!empty($empData->device_id) ? $empData->device_id.','.$data['id'] : $data['id']);
+			
+			$this->edit($this->empMaster,['id'=>$empData->id],['biomatric_id'=>$empData->emp_code,'device_id'=>$empDevice]);
+			
+			$result = ['status'=>1,'message'=>'Employee added scucessfully.'];
+			
+			if ($this->db->trans_status() !== FALSE):
+                $this->db->trans_commit();
+                return $result;
+            endif;
+		}catch(\Throwable $e){
+            $this->db->trans_rollback();
+            return ['status'=>2,'message'=>"somthing is wrong. Error : ".$e->getMessage()];
+        }
+	}
+    
     public function removeEmployeeInDevice($id,$empId){
         try{
             $this->db->trans_begin();
-            $empData = $this->getEmp($empId);
+            $empData = $this->getEmployee(['id'=>$empId]);
+            
             $data['tableName'] ="device_master";
             $data['select'] = "device_master.*";
             $data['where']['id'] = $id;
@@ -592,12 +612,12 @@ class EmployeeModel extends MasterModel{
                 $empDeviceArr[]=$id;
             }
             $empDevice=implode(',',$empDeviceArr);
-            //if(empty($empData->emp_code)):
-            if(empty($empData->old_emp_code)):
+            if(empty($empData->emp_code)):
+            //if(empty($empData->old_emp_code)):
                 return ['status'=>0,'message'=>'Employee code not found.'];
             endif;
-            //$empCode = $deviceData->Empcode = trim($empData->emp_code);
-            $empCode = $deviceData->Empcode = trim($empData->old_emp_code);
+            $empCode = $deviceData->Empcode = trim($empData->emp_code);
+            //$empCode = $deviceData->Empcode = trim($empData->old_emp_code);
             $empName = $deviceData->emp_name = str_replace(" ","%20",$empData->emp_name);
             
             $deviceResponse = $this->biometric->removeEmpDevice($deviceData);

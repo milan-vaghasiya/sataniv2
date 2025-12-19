@@ -11,18 +11,6 @@
                             </div>       
                             <div class="col-md-6 float-right">  
                                 <div class="input-group">
-                                    <div class="input-group-append" style="width:40%;">
-                                        <select id="store_name" class="form-control select2 req">
-                                            <option value="">All Location</option>
-                                            <?php 
-                                                if(!empty($locationList)){
-                                                    foreach($locationList as $row){
-                                                        echo '<option value="' . $row['store_name'] . '">' . $row['store_name'] . '</option>';
-                                                    }
-                                                }
-                                            ?>
-                                        </select>  
-                                    </div>
                                     <div class="input-group-append" style="width:20%;">
                                         <select id="item_type" class="form-control select2">
                                             <?php
@@ -32,6 +20,18 @@
                                             ?>
                                             <option value="99">Semi Finish</option>
                                         </select>
+                                    </div>
+                                    <div class="input-group-append" style="width:40%;">
+                                        <select id="store_name" class="form-control select2 req">
+                                            <option value="">ALL Location</option>
+                                            <?php 
+                                                if(!empty($locationList)){
+                                                    foreach($locationList as $row){
+                                                        echo '<option value="' . $row['store_name'] . '">' . $row['store_name'] . '</option>';
+                                                    }
+                                                }
+                                            ?>
+                                        </select> 
                                     </div>
                                     <div class="input-group-append" style="width:20%;">
                                         <select id="stock_type" class="form-control select2" >
@@ -60,6 +60,7 @@
 									<tr>
 										<th class="text-center">#</th>
 										<th class="text-left">Item Description</th>
+										<th class="text-left">Item Category</th>
 										<th class="text-right">Balance Qty.</th>
 									</tr>
 								</thead>
@@ -103,7 +104,7 @@ $(document).ready(function(){
         }
     });  
 
-	$(document).on('click', '.stockTransactions', function() {
+    $(document).on('click', '.stockTransactions', function() {
 		var button = "close";
 		var item_id = $(this).data("item_id");
 		var item_name = $(this).data("item_name");

@@ -17,6 +17,7 @@ class Pos extends Pos_Controller{
 		}
        
     }
+    
     public function prcAccept(){
         $data = $this->input->post();
         $this->data['operator_id'] = $data['operator_id'];
@@ -219,7 +220,7 @@ class Pos extends Pos_Controller{
 		endif;
 	}
 
-    public function prcProcesstag($tag_url = "") {
+    public function prcProcesstagOld($tag_url = "") {
         $url = (!empty($tag_url)?$tag_url:$this->input->post('url'));
         $data = decodeURL($url);
         
@@ -284,8 +285,82 @@ class Pos extends Pos_Controller{
         }
         
 	}
+	
+	public function prcProcesstag($tag_url = "") {
+        $url = (!empty($tag_url)?$tag_url:$this->input->post('url'));
+        $data = decodeURL($url);
+        
+		$processData = $this->sop->getPrcAcceptData(['id'=> $data->id,'single_row'=>1]);
+		$logo = base_url('assets/images/logo.png');
+		$qrIMG = base_url('assets/uploads/sop/'.$data->id.'.png');
+        $qrText = encodeURL(['id'=>$processData->id,'type'=>'process_tag']);
+        $file_name = $data->id;
+        $qrIMG = base_url().$this->getQRCode($qrText,'assets/uploads/sop/',$file_name);
+        
+        $qty = (!empty($data->accept_qty)?$data->accept_qty:floatval($processData->accepted_qty));
+        
+        // Build the HTML content for the PDF
+        $itemList ='<table class="table" style="font-size:0.5rem;">
+                        <tr>
+                            <td><img src="'.$logo.'" style="max-height:40px;"></td>
+                            <td class="text-right"><b>Material Status Card </b><br><small>(FQC26B(00/01.01.24))</small></td>
+                        </tr>
+                    </table>
+                    <table class="table top-table-border">
+                        <tr>
+                            <td>Card No. <br><b>'.(!empty($processData->id)?$processData->id:'-').'</b></td>
+                            <td>Date <br><b>' . formatDate($processData->trans_date) . '</b></td>
+                        </tr>
+                        <tr>
+                            <td>Process Unit<br><b>'.(!empty($processData->company_alias)?$processData->company_alias:'-').'</b></td>
+                            <td>Department <br><b>'.(!empty($processData->dept_name)?$processData->dept_name:'-').'</b></td>
+                        </tr>
+                        <tr>
+					        <td>Customer <br><b>'.(!empty($processData->party_name)?$processData->party_name:'-').'</b></td>
+                            <td>Supplier <br><b>'.(!empty($processData->prev_process_name)?$processData->prev_process_name:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Type & Part<br><b>'.(!empty($processData->item_name)?$processData->item_name:'-').'</b></td>
+                            <td>Batch/Heat No <br><b>'.(!empty($processData->prc_number)?$processData->prc_number:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Material Qty<br><b>'.$qty.' (NOS)</b></td>
+                            <td>Material Stage<br><b>'.(!empty($processData->next_process_name)?$processData->next_process_name:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Material Process<br><b>'.(!empty($processData->next_process_name)?$processData->next_process_name:'-').'</b></td>
+                            <td>Material Status<br><b>Pending Production</b></td>
+                        </tr>
+                        <tr>
+                            <td>Operator/Inspector<br><b>'.(!empty($processData->emp_name) ? $processData->emp_name : '-').'</b></td>
+                            <td>Supervisor<br><b></b>-</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="text-center"><img src="'.$qrIMG.'" style="height:30mm;"></td>
+                        </tr>
+                    </table>';
+        $pdfData = '<div style="text-align:center;float:left;padding:1mm 1mm;rotate: -90;position: absolute;bottom:1mm;width:65mm;height:95mm;">' . $itemList . '</div>';
+		// print_r($pdfData);exit;
+        $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => [100, 68]]);
+        
+        $pdfFileName = str_replace(" ", "_", str_replace("/", " ",'accept_tag'.time())) . '.pdf';
+        $stylesheet = file_get_contents(base_url('assets/css/pdf_style.css'));
+        $mpdf->WriteHTML($stylesheet, 1);
+        $mpdf->SetDisplayMode('fullpage');
+        $mpdf->AddPage('P', '', '', '', '', 1, 1, 2, 2, 1, 1);
+        $mpdf->WriteHTML($pdfData);
+        if(!empty($tag_url)){
+            $mpdf->Output($pdfFileName, 'I');
+        }else{
+            $pdfOutputPath = 'assets/uploads/sop/' . $pdfFileName;
+            $mpdf->Output($pdfOutputPath, 'F'); 
+            $pdfUrl = base_url($pdfOutputPath);
+            $this->printJson(['status'=>1,'url'=>$pdfUrl]);
+        }
+        
+	}
 
-    public function printPRCLog($log_id = "",$tag_qty="") {
+    public function printPRCLogOld($log_id = "",$tag_qty="") {
         
         $id = (!empty($log_id) ? $log_id :$this->input->post('id'));
         // Fetch process data
@@ -352,7 +427,83 @@ class Pos extends Pos_Controller{
         }
     }
 
-    public function printPRCRejLog($log_id = "") {
+    public function printPRCLog($log_id = "",$tag_qty="") {
+        
+        $id = (!empty($log_id) ? $log_id :$this->input->post('id'));
+        // Fetch process data
+        $processData = $this->sop->getProcessLogList(['id' => $id, 'single_row' => 1]);
+        $logo = base_url('assets/images/logo.png');
+        $qrIMG = base_url('assets/uploads/sop/' . $id . '.png');
+        $qrText = encodeURL(['id' => $id, 'type' => 'log_tag']);
+        $file_name = $id;
+        $qrIMG = base_url() . $this->getQRCode($qrText, 'assets/uploads/sop/', $file_name);
+        
+    
+         // Build the HTML content for the PDF
+        $itemList ='<table class="table" style="font-size:0.5rem;">
+                        <tr>
+                            <td><img src="'.$logo.'" style="max-height:40px;"></td>
+                            <td class="text-right"><b>Material Status Card </b><br><small>(FQC26B(00/01.01.24))</small></td>
+                        </tr>
+                    </table>
+                    <table class="table top-table-border">
+                        <tr>
+                            <td>Card No. <br><b>'.(!empty($processData->id)?$processData->id:'-').'</b></td>
+                            <td>Date <br><b>' . formatDate($processData->trans_date) . '</b></td>
+                        </tr>
+                        <tr>
+                            <td>Process Unit<br><b>'.(!empty($processData->company_alias)?$processData->company_alias:'-').'</b></td>
+                            <td>Department <br><b>'.(!empty($processData->dept_name)?$processData->dept_name:'-').'</b></td>
+                        </tr>
+                        <tr>
+					        <td>Customer <br><b>'.(!empty($processData->party_name)?$processData->party_name:'-').'</b></td>
+                            <td>Supplier <br><b>'.(!empty($processData->prv_process_name)?$processData->prv_process_name:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Type & Part<br><b>'.(!empty($processData->item_name)?$processData->item_name:'-').'</b></td>
+                            <td>Batch/Heat No <br><b>'.(!empty($processData->prc_number)?$processData->prc_number:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Material Qty<br><b>'.floatval((empty($tag_qty)?$processData->qty:$tag_qty)).' (NOS)</b></td>
+                            <td>Material Stage<br><b>'.(!empty($processData->process_name)?$processData->process_name:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Material Process<br><b>'.(!empty($processData->process_name)?$processData->process_name:'-').'</b></td>
+                            <td>Material Status<br><b>Pending Movement</b></td>
+                        </tr>
+                        <tr>
+                            <td>Operator/Inspector<br><b>'.(!empty($processData->emp_name) ? $processData->emp_name : '-').'</b></td>
+                            <td>Supervisor<br><b></b>-</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">Remark<br><b>'.(!empty($processData->remark) ? $processData->remark : '-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="text-center"><img src="'.$qrIMG.'" style="height:30mm;"></td>
+                        </tr>
+                    </table>';
+        $pdfData = '<div style="text-align:center;float:left;padding:1mm 1mm;rotate: -90;position: absolute;bottom:1mm;width:65mm;height:95mm;">' . $itemList . '</div>';
+		
+        $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => [100, 68]]);
+        
+        $pdfFileName = str_replace(" ", "_", str_replace("/", " ", 'log_tag'.$id.time())) . '.pdf';
+        $stylesheet = file_get_contents(base_url('assets/css/pdf_style.css'));
+        $mpdf->WriteHTML($stylesheet, 1);
+        $mpdf->SetDisplayMode('fullpage');
+        $mpdf->AddPage('P', '', '', '', '', 1, 1, 2, 2, 1, 1);
+        $mpdf->WriteHTML($pdfData);
+    
+        $pdfOutputPath = 'assets/uploads/sop/' . $pdfFileName;
+        if(!empty($log_id)){
+            $mpdf->Output($pdfOutputPath, 'I'); 
+        }else{
+            $mpdf->Output($pdfOutputPath, 'F'); 
+            $pdfUrl = base_url($pdfOutputPath);
+            $this->printJson(['status'=>1,'url'=>$pdfUrl]);
+        }
+    }
+
+    public function printPRCRejLogOld($log_id = "") {
 		$id = (!empty($log_id)?$log_id:$this->input->post('id'));
 		$processData = $this->sop->getProcessLogList(['id'=>$id,'single_row'=>1]);
 		$logo = base_url('assets/images/logo.png');
@@ -392,6 +543,75 @@ class Pos extends Pos_Controller{
 
 		$pdfData = '<div style="width:97mm;height:50mm;text-align:center;float:left;padding:0mm 0.7mm;">'  . $itemList . '</div>';
         $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => [100, 60]]);
+        $pdfFileName = str_replace(" ", "_", str_replace("/", " ",'rej_log_tag'.$id.time())) . '.pdf';
+        $stylesheet = file_get_contents(base_url('assets/css/pdf_style.css'));
+        $mpdf->WriteHTML($stylesheet, 1);
+        $mpdf->SetDisplayMode('fullpage');
+        $mpdf->AddPage('P', '', '', '', '', 1, 1, 2, 2, 1, 1);
+        $mpdf->WriteHTML($pdfData);
+		
+        if(!empty($log_id)){
+			$mpdf->Output($pdfFileName, 'I');
+        }else{
+			$pdfOutputPath = 'assets/uploads/sop/' . $pdfFileName;
+            $mpdf->Output($pdfOutputPath, 'F'); 
+            $pdfUrl = base_url($pdfOutputPath);
+            $this->printJson(['status'=>1,'url'=>$pdfUrl]);
+        }
+	}
+	
+	public function printPRCRejLog($log_id = "") {
+		$id = (!empty($log_id)?$log_id:$this->input->post('id'));
+		$processData = $this->sop->getProcessLogList(['id'=>$id,'single_row'=>1]);
+		$logo = base_url('assets/images/logo.png');
+		$qrIMG = base_url('assets/uploads/sop/'.$id.'.png');
+        $qrText = encodeURL(['id'=>$id,'type'=>'rej_tag']);
+        $file_name = $id;
+        $qrIMG = base_url().$this->getQRCode($qrText,'assets/uploads/sop/',$file_name);
+        
+	
+        // Build the HTML content for the PDF
+        $itemList ='<table class="table" style="font-size:0.5rem;">
+                        <tr>
+                            <td><img src="'.$logo.'" style="max-height:40px;"></td>
+                            <td class="text-right"><b>Material Status Card </b><br><small>(FQC26B(00/01.01.24))</small></td>
+                        </tr>
+                    </table>
+                    <table class="table top-table-border">
+                        <tr>
+                            <td>Card No. <br><b>'.(!empty($processData->id)?$processData->id:'-').'</b></td>
+                            <td>Date <br><b>' . formatDate($processData->trans_date) . '</b></td>
+                        </tr>
+                        <tr>
+                            <td>Process Unit<br><b>'.(!empty($processData->company_alias)?$processData->company_alias:'-').'</b></td>
+                            <td>Department <br><b>'.(!empty($processData->dept_name)?$processData->dept_name:'-').'</b></td>
+                        </tr>
+                        <tr>
+					        <td>Customer <br><b>'.(!empty($processData->party_name)?$processData->party_name:'-').'</b></td>
+                            <td>Supplier <br><b>'.(!empty($processData->prv_process_name)?$processData->prv_process_name:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Type & Part<br><b>'.(!empty($processData->item_name)?$processData->item_name:'-').'</b></td>
+                            <td>Batch/Heat No <br><b>'.(!empty($processData->prc_number)?$processData->prc_number:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Material Qty<br><b>'.floatval($processData->rej_found).' (NOS)</b></td>
+                            <td>Material Stage<br><b>'.(!empty($processData->process_name)?$processData->process_name:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Material Process<br><b>'.(!empty($processData->process_name)?$processData->process_name:'-').'</b></td>
+                            <td>Material Status<br><b>Pending QC</b></td>
+                        </tr>
+                        <tr>
+                            <td>Operator/Inspector<br><b>'.(!empty($processData->emp_name) ? $processData->emp_name : '-').'</b></td>
+                            <td>Supervisor<br><b></b>-</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="text-center"><img src="'.$qrIMG.'" style="height:30mm;"></td>
+                        </tr>
+                    </table>';
+        $pdfData = '<div style="text-align:center;float:left;padding:1mm 1mm;rotate: -90;position: absolute;bottom:1mm;width:65mm;height:95mm;">' . $itemList . '</div>';
+        $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => [100, 68]]);
         $pdfFileName = str_replace(" ", "_", str_replace("/", " ",'rej_log_tag'.$id.time())) . '.pdf';
         $stylesheet = file_get_contents(base_url('assets/css/pdf_style.css'));
         $mpdf->WriteHTML($stylesheet, 1);
@@ -726,7 +946,7 @@ class Pos extends Pos_Controller{
 
     public function getProductionLogHtml(){
         $data = $this->input->post();
-        $acceptData = $this->sop->getProcessLogList(['created_by'=>$data['operator_id']]);
+        $acceptData = $this->sop->getProcessLogList(['created_by'=>$data['operator_id'],'limit'=>500]);
 		$html="<div class='card'><div class='card-body'><h5>Production Log Detail : </h5><table class='table table-bordered' id='reportTable'>
                     <thead class='thead-info'>
                         <tr>
@@ -1003,7 +1223,7 @@ class Pos extends Pos_Controller{
         $this->printJson(['status'=>1,'tbody'=>$tbody]);
     }
 
-    public function printPRCMovement($log_id = "",$tag_qty = "") {
+    public function printPRCMovementOld($log_id = "",$tag_qty = "") {
         $id = (!empty($log_id)?$log_id:$this->input->post('id'));
         $tag_qty = (!empty($tag_qty)?$tag_qty:$this->input->post('tag_qty'));
 		$movementData = $this->sop->getProcessMovementList(['id'=>$id,'single_row'=>1,'nextPrcProcessData'=>1]);
@@ -1076,7 +1296,87 @@ class Pos extends Pos_Controller{
         }
 	}
 
-    public function printMaterialTag($tag_url = "") {
+    public function printPRCMovement($log_id = "",$tag_qty = "") {
+        $id = (!empty($log_id)?$log_id:$this->input->post('id'));
+        $tag_qty = (!empty($tag_qty)?$tag_qty:$this->input->post('tag_qty'));
+		$movementData = $this->sop->getProcessMovementList(['id'=>$id,'single_row'=>1,'nextPrcProcessData'=>1]);
+
+		if (!empty($movementData->next_process_id)) {
+            $mtitle = 'Process Tag';
+            $revno = date('d.m.Y <br> h:i:s A');
+        } else {
+            $mtitle = 'Final Inspection	OK Material';
+            $revno = 'F QA 25<br>(01/01.10.2021)';
+        }
+
+		$logo = base_url('assets/images/logo.png');
+		$title = 'Movement Tag';
+		$qrIMG = "";
+		$tag_qty = !empty($tag_qty)?$tag_qty:$movementData->qty;
+		$qrText = encodeURL(['id'=>$movementData->id,'tag_qty'=>$tag_qty,'type'=>'move_tag']);
+		$file_name = $movementData->id;
+		$qrIMG = base_url().$this->getQRCode($qrText,'assets/uploads/movement_tag/',$file_name);
+
+		// Build the HTML content for the PDF
+        $itemList ='<table class="table" style="font-size:0.5rem;">
+                        <tr>
+                            <td><img src="'.$logo.'" style="max-height:40px;"></td>
+                            <td class="text-right"><b>Material Status Card </b><br><small>(FQC26B(00/01.01.24))</small></td>
+                        </tr>
+                    </table>
+                    <table class="table top-table-border">
+                        <tr>
+                            <td>Card No. <br><b>'.(!empty($movementData->tag_no)?$movementData->tag_no:'-').'</b></td>
+                            <td>Date <br><b>'.(!empty($movementData->trans_date)?$movementData->trans_date:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Process Unit<br><b>'.(!empty($movementData->company_alias)?$movementData->company_alias:'-').'</b></td>
+                            <td>Department <br><b>'.(!empty($movementData->dept_name)?$movementData->dept_name:'-').'</b></td>
+                        </tr>
+                        <tr>
+					        <td>Customer <br><b>'.(!empty($movementData->party_name)?$movementData->party_name:'-').'</b></td>
+                            <td>Supplier <br><b>'.(!empty($movementData->prv_process_name)?$movementData->prv_process_name:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Type & Part<br><b>'.(!empty($movementData->item_name)?$movementData->item_name:'-').'</b></td>
+                            <td>Batch/Heat No <br><b>'.(!empty($movementData->prc_number)?$movementData->prc_number:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Material Qty<br><b>'.floatval((empty($tag_qty)?$movementData->qty:$tag_qty)).' (NOS)</b></td>
+                            <td>Material Stage<br><b>'.(!empty($movementData->current_process_name)?$movementData->current_process_name:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Material Process<br><b>'.(!empty($movementData->current_process_name)?$movementData->current_process_name:'-').'</b></td>
+                            <td>Material Status<br><b>Pending Receive</b></td>
+                        </tr>
+                        <tr>
+                            <td>Operator/Inspector<br><b>-</b></td>
+                            <td>Supervisor<br><b></b>'.(!empty($movementData->emp_name)?$movementData->emp_name:'-').'</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="text-center"><img src="'.$qrIMG.'" style="height:30mm;"></td>
+                        </tr>
+                    </table>';
+        $pdfData = '<div style="text-align:center;float:left;padding:1mm 1mm;rotate: -90;position: absolute;bottom:1mm;width:65mm;height:95mm;">' . $itemList . '</div>';
+		
+        $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => [100, 68]]);
+        $pdfFileName = str_replace(" ", "_", str_replace("/", " ", 'movement_tag'.time())) . '.pdf';
+        $stylesheet = file_get_contents(base_url('assets/css/pdf_style.css'));
+        $mpdf->WriteHTML($stylesheet, 1);
+        $mpdf->SetDisplayMode('fullpage');
+        $mpdf->AddPage('P', '', '', '', '', 1, 1, 2, 2, 1, 1);
+        $mpdf->WriteHTML($pdfData);
+        if(!empty($log_id)){
+            $mpdf->Output($pdfFileName, 'I');
+        }else{
+            $pdfOutputPath = 'assets/uploads/sop/' . $pdfFileName;
+            $mpdf->Output($pdfOutputPath, 'F'); 
+            $pdfUrl = base_url($pdfOutputPath);
+            $this->printJson(['status'=>1,'url'=>$pdfUrl]);
+        }
+	}
+
+    public function printMaterialTagOld($tag_url = "") {
         $url = (!empty($tag_url)?$tag_url:$this->input->post('url'));
         $data = decodeURL($url);
 		$data->id = (!empty($data->id)?$data->id:0);
@@ -1136,8 +1436,82 @@ class Pos extends Pos_Controller{
         }
         
 	}
+	
+	 public function printMaterialTag($tag_url = "") {
+        $url = (!empty($tag_url)?$tag_url:$this->input->post('url'));
+        $data = decodeURL($url);
+		$data->id = (!empty($data->id)?$data->id:0);
+		$itemData = $this->item->getItem(['id'=>$data->item_id]); 
+		$logo = base_url('assets/images/logo.png');
+		$qrIMG = "";
+		$qrText = encodeURL(['item_id'=>$data->item_id,'batch_no'=>$data->batch_no,'heat_no'=>$data->heat_no,'location_id'=>$data->location_id,'qty'=>$data->qty,'type'=>'material_stock_tag']);
+		$file_name = 'mtr_stock_tag'.str_replace(" ", "_", str_replace("/", " ", $data->item_id.$data->batch_no.$data->heat_no.$data->location_id));
+		$qrIMG = base_url().$this->getQRCode($qrText,'assets/uploads/iir_qr/',$file_name);
+		
+		
+		$itemList ='<table class="table" style="font-size:0.5rem;">
+                        <tr>
+                            <td><img src="'.$logo.'" style="max-height:40px;"></td>
+                            <td class="text-right"><b>Material Status Card </b><br><small>(FQC26B(00/01.01.24))</small></td>
+                        </tr>
+                    </table>
+                    <table class="table top-table-border">
+                        <tr>
+                            <td>Card No. <br><b>'.(!empty($data->batch_no)?$data->batch_no:'-').'</b></td>
+                            <td>Date <br><b>-</b></td>
+                        </tr>
+                        <tr>
+                            <td>Process Unit<br><b>'.(!empty($itemData->company_alias)?$irData->company_alias:'-').'</b></td>
+                            <td>Department <br><b>'. (!empty($data->location_name) ? $data->location_name : "").'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Customer <br><b>-</b></td>
+                            <td>Supplier <br><b>'.(!empty($mtrData->party_name)?$mtrData->party_name:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Type & Part<br><b>'.(!empty($itemData->item_name)?$itemData->item_name:'-').'</b></td>
+                            <td>Batch/Heat No <br><b>'.$data->batch_no.'/'.(!empty($data->heat_no)?$data->heat_no:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Material Qty<br><b>'.$data->qty.' ('.$itemData->uom.')</b></td>
+                            <td>Material Stage<br><b>-</b></td>
+                        </tr>
+                        <tr>
+                            <td>Material Process<br><b>Store</b></td>
+                            <td>Material Status<br><b>-</b></td>
+                        </tr>
+                        <tr>
+                            <td>Operator/Inspector<br><b>-</b></td>
+                            <td>Supervisor<br><b></b>-</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="text-center"><img src="'.$qrIMG.'" style="height:30mm;"></td>
+                        </tr>
+                    </table>';
+        $pdfData = '<div style="text-align:center;float:left;padding:1mm 1mm;rotate: -90;position: absolute;bottom:1mm;width:65mm;height:95mm;">' . $itemList . '</div>';
+		
+        $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => [100, 68]]);
+        
+        $pdfFileName = str_replace(" ", "_", str_replace("/", " ", 'material_stock_tag'.time())) . '.pdf';
+        $stylesheet = file_get_contents(base_url('assets/css/pdf_style.css'));
+        $mpdf->WriteHTML($stylesheet, 1);
+        $mpdf->SetDisplayMode('fullpage');
+        $mpdf->SetProtection(array('print'));
+        $mpdf->AddPage('P', '', '', '', '', 1, 1, 2, 2, 1, 1);
+        $mpdf->WriteHTML($pdfData);
+        if(!empty($tag_url)){
+            $mpdf->Output($pdfFileName, 'I');
+        }else{
+            $pdfOutputPath = 'assets/uploads/sop/' . $pdfFileName;
+            $mpdf->Output($pdfOutputPath, 'F'); 
+            $pdfUrl = base_url($pdfOutputPath);
+            $this->printJson(['status'=>1,'url'=>$pdfUrl]);
+        }
+        
+	}
+	
 
-    public function printMaterialAcceptTag($tag_url = "") {
+    public function printMaterialAcceptTagOld($tag_url = "") {
         $url = (!empty($tag_url)?$tag_url:$this->input->post('url'));
 		$data = decodeURL($url);
 		
@@ -1190,6 +1564,81 @@ class Pos extends Pos_Controller{
 		$pdfData = '<div style="width:97mm;height:50mm;text-align:center;float:left;padding:0mm 0.7mm;">' . $itemList . '</div>';
 		
         $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => [100, 60]]);
+        $pdfFileName = str_replace(" ", "_", str_replace("/", " ",'material_accept_tag'.time())) . '.pdf';
+        $stylesheet = file_get_contents(base_url('assets/css/pdf_style.css'));
+        $mpdf->WriteHTML($stylesheet, 1);
+        $mpdf->SetDisplayMode('fullpage');
+        $mpdf->SetProtection(array('print'));
+        $mpdf->AddPage('P', '', '', '', '', 1, 1, 2, 2, 1, 1);
+        $mpdf->WriteHTML($pdfData);
+        if(!empty($tag_url)){
+            $mpdf->Output($pdfFileName, 'I');
+        }else{
+            $pdfOutputPath = 'assets/uploads/sop/' . $pdfFileName;
+            $mpdf->Output($pdfOutputPath, 'F'); 
+            $pdfUrl = base_url($pdfOutputPath);
+            $this->printJson(['status'=>1,'url'=>$pdfUrl]);
+        }
+	}
+	
+	public function printMaterialAcceptTag($tag_url = "") {
+        $url = (!empty($tag_url)?$tag_url:$this->input->post('url'));
+		$data = decodeURL($url);
+		
+		$mtitle = (!empty($data->title)?$data->title:"TAG PRINT");
+		$data->id = (!empty($data->id)?$data->id:0);
+		$mtrData = $this->sop->getBatchData(['prc_id'=>$data->prc_id,'item_id'=>$data->item_id,'id'=>$data->id,'single_row'=>1]); 
+		$logo = base_url('assets/images/logo.png');
+		$qrIMG = "";
+		$qrText = encodeURL(['prc_id'=>$data->prc_id,'process_id'=>$mtrData->process_id,'item_id'=>$data->item_id,'id'=>$data->id,'qty'=>floatval($mtrData->issue_qty),'type'=>'material_tag']);
+		$file_name = 'mtr_tag'.$data->prc_id;
+		$qrIMG =base_url().$this->getQRCode($qrText,'assets/uploads/movement_tag/',$file_name);
+		
+		$itemList ='<table class="table" style="font-size:0.5rem;">
+                        <tr>
+                            <td><img src="'.$logo.'" style="max-height:40px;"></td>
+                            <td class="text-right"><b>Material Status Card </b><br><small>(FQC26B(00/01.01.24))</small></td>
+                        </tr>
+                    </table>
+                    <table class="table top-table-border">
+                        <tr>
+                            <td>Card No. <br><b>'.(!empty($mtrData->ref_no)?$mtrData->ref_no:'-').'</b></td>
+                            <td>Date <br><b>'.(!empty($mtrData->ref_date)?formatDate($mtrData->ref_date):'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Process Unit<br><b>'.(!empty($mtrData->company_alias)?$mtrData->company_alias:'-').'</b></td>
+                            <td>Department <br><b>Store</b></td>
+                        </tr>
+                        <tr>
+                            <td>Customer <br><b>-</b></td>
+                            <td>Supplier <br><b>'.(!empty($mtrData->party_name)?$mtrData->party_name:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Type & Part<br><b>'.(!empty($mtrData->item_name)?$mtrData->item_name:'-').'</b></td>
+                            <td>Batch/Heat No <br><b>'.(!empty($mtrData->heat_no)?$mtrData->heat_no:'-').'</b></td>
+                        </tr>
+                        <tr>
+                            <td>Material Qty<br><b>'.$mtrData->issue_qty.' ('.$mtrData->uom.')</b></td>
+                            <td>Material Stage<br><b>Production</b></td>
+                        </tr>
+                        <tr>
+                            <td>Material Process<br><b>'.$mtrData->process_name.'</b></td>
+                            <td>Material Status<br><b>Issue</b></td>
+                        </tr>
+                        <tr>
+                            <td>Operator/Inspector<br><b>-</b></td>
+                            <td>Supervisor<br><b></b>-</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="text-center"><img src="'.$qrIMG.'" style="height:30mm;"></td>
+                        </tr>
+                    </table>';
+        $pdfData = '<div style="text-align:center;float:left;padding:1mm 1mm;rotate: -90;position: absolute;bottom:1mm;width:65mm;height:95mm;">' . $itemList . '</div>';
+
+        
+        $pdfFileName = str_replace(" ", "_", str_replace("/", " ",'material_accept_tag'.time())) . '.pdf';
+        $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => [100, 68]]);
+        
         $pdfFileName = str_replace(" ", "_", str_replace("/", " ",'material_accept_tag'.time())) . '.pdf';
         $stylesheet = file_get_contents(base_url('assets/css/pdf_style.css'));
         $mpdf->WriteHTML($stylesheet, 1);

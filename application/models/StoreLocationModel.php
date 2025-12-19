@@ -152,8 +152,8 @@ class StoreLocationModel extends MasterModel{
             return ['status'=>2,'message'=>"somthing is wrong. Error : ".$e->getMessage()];
         }
 	}
-
-    public function getLocationIds($data){
+	
+	public function getLocationIds($data){
         $queryData['tableName'] = $this->locationMaster;
         $queryData['where']['store_name'] = $data['store_name'];
         $queryData['where']['final_location'] = 1;
@@ -162,5 +162,6 @@ class StoreLocationModel extends MasterModel{
 
         return !empty($locationData) ? array_column($locationData, 'id') : [];
     }
+    
 }
 ?>

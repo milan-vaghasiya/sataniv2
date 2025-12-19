@@ -365,7 +365,7 @@ class ProductionReport extends MY_Controller{
     /* Production Log Sheet Report*/
     public function productionLogSheet(){
         $this->data['pageHeader'] = 'PRODUCTION LOG SHEET';
-        $this->data['startDate'] = date('Y-m-01');
+        $this->data['startDate'] = date('Y-m-d');
         $this->data['endDate'] = getFyDate(date("Y-m-d"));
 		$this->data['processList'] = $this->process->getProcessList();
 
@@ -378,13 +378,16 @@ class ProductionReport extends MY_Controller{
 
         $tbody = '';$i=1; $tfoot=''; $totalOkQty = 0;$totalRejQty = 0;
         foreach($productionData as $row):
-            $machine_name = $row->process_by == 3 ? $row->party_name : $row->machine_name;
-
+            
+            $processor_name = $row->machine_name;
+            if($row->process_by==3){ $processor_name = $row->party_name; }
+            if($row->process_by==2){ $processor_name = $row->dept_name; }
+            
             $tbody .= '<tr class="text-center">
                 <td class="text-left">'.$i.'</td>
                 <td class="text-left">'.formatDate($row->trans_date).'</td>
                 <td class="text-left">'.$row->emp_name.'</td>
-                <td class="text-left">'.$machine_name.'</td>
+                <td class="text-left">'.$processor_name.'</td>
                 <td>'.$row->shift_name.'</td>
                 <td>'.$row->item_name.'</td>
                 <td>'.$row->prc_number.' </td>
@@ -399,14 +402,12 @@ class ProductionReport extends MY_Controller{
 
             $totalOkQty += floatval($row->ok_qty);
             $totalRejQty += floatval($row->rej_qty);
- 
         endforeach;
         $tfoot .= '<tr>
-             <th colspan="10" class="text-right">Total</th>
-             <th class="text-center">'.$totalOkQty.'</th>
-             <th class="text-center">'.$totalRejQty.'</th>
-             <th></th>
- 
+            <th colspan="10" class="text-right">Total</th>
+            <th class="text-center">'.$totalOkQty.'</th>
+            <th class="text-center">'.$totalRejQty.'</th>
+            <th></th>
          </tr>';
         $this->printJson(['status'=>1,'tbody'=>$tbody,'tfoot'=>$tfoot]);
     }
