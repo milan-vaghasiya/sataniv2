@@ -17,12 +17,33 @@ class StockVerification extends MY_Controller
         $this->data['pageHeader'] = 'STOCK VERIFICATION';
         $this->data['dataUrl'] = 'getDTRows/1';
         $this->data['tableHeader'] = getStoreDtHeader("stockVerification");
+        $this->data['locationList'] = $this->storeLocation->getStoreLocationList(['final_location'=>1,'store_type'=>0]);
+
+        $locationList = [];
+        foreach($this->data['locationList'] as $key => $row){
+            $locationList[$row->store_name] = array(
+                'id' => $row->id,
+                'store_name' => $row->store_name,
+            );
+        }
+        $this->data['locationList'] = $locationList;
+
         $this->load->view($this->indexPage,$this->data);
     }         
 
-    public function getDTRows($item_type=""){
+    public function getDTRows($item_type="",$store_name = ""){
         $data = $this->input->post();
         $data['item_type'] = $item_type;
+        $data['store_name'] = !empty($store_name) ? decodeURL($store_name) : '';
+        $data['location_id'] = $this->storeLocation->getLocationIds($data);
+        if (!empty($data['item_type']) && $data['item_type'] == 99) {
+            $data['stock_where'] = 'stock_transaction.location_id = ' . $this->FORGE_STORE->id;
+        }
+        if (!empty($data['location_id'])) {
+            $data['stock_where'] = 'stock_transaction.location_id IN (' . implode(',', $data['location_id']) . ')';
+        }
+        $data['item_type'] = (!empty($data['item_type']) && $data['item_type'] == 99) ? 1 : $data['item_type'];
+        
         $result = $this->stockVerify->getDTRows($data);
         $sendData = array();$i=($data['start'] + 1);
         foreach($result['data'] as $row):

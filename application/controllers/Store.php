@@ -180,7 +180,7 @@ class Store extends MY_Controller
             $this->data['tableHeader'] = getStoreDtHeader('pendingRequisition');
         else
             $this->data['tableHeader'] = getStoreDtHeader('issueRequisition');
-        $this->load->view($this->issueIndex, $this->data);
+            $this->load->view($this->issueIndex, $this->data);
     }
 
     // 26-10-2024
@@ -220,6 +220,8 @@ class Store extends MY_Controller
 		$this->data['dataRow'] = $this->store->getRequest($data);
 		$this->data['prcData'] = $this->sop->getPRCList(['status'=>'1,2']);
 		$this->data['empData'] = $this->employee->getEmployeeList();
+        $this->data['companyList'] = $this->employee->getCompanyList();
+        $this->data['machineList'] = $this->item->getItemList(['item_type'=>5]);
         $this->load->view($this->issueForm, $this->data);
     }
 
@@ -255,7 +257,6 @@ class Store extends MY_Controller
 
         $data = $this->input->post();
         $errorMessage = array();
-
         if(isset($data['batch_no'])){
             $sData = $data['batch_no'];
             for ($i=0; $i < count($sData); $i++) {

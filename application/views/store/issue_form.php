@@ -66,6 +66,28 @@
                     <div class="error item_err"></div>
                 </div>
                 <div class="col-md-4 form-group">
+                    <label for="unit_id">Unit</label>
+                    <select name="unit_id" id="unit_id" class="form-control select2">
+                        <option value="">Select Unit</option>
+                        <?php
+                            foreach($companyList as $row){
+                                echo '<option value="'.$row->id.'" '.$selected.' '.$disabled.'>'.$row->company_name.'</option>';
+                            }
+                        ?>
+                    </select>
+                </div>
+                <div class="col-md-4 form-group">
+                    <label for="machine_id">Machine</label>
+                    <select name="machine_id" id="machine_id" class="form-control select2">
+                        <option value="">Select Machine</option>
+                        <?php 
+                            foreach ($machineList as $row){
+                                echo '<option value="' . $row->id . '">' . (!empty($row->item_code) ? '['.$row->item_code.'] ' : ''). $row->item_name . '</option>';
+                            }
+                        ?>
+                    </select>
+                </div>  
+                <div class="col-md-4 form-group">
                     <label for="remark">Request Remark</label>
                     <input type="text" id="remark" class="form-control" value="<?=(!empty($dataRow->remark) ? $dataRow->remark : "")?>" />
                 </div>

@@ -2,6 +2,7 @@
 class StoreReportModel extends MasterModel{
     private $itemMaster = "item_master";
     private $stockTrans = "stock_transaction";
+    private $issueRegister = "issue_register";
 
     public function getStockRegisterData($data){
         $queryData = array();
@@ -132,7 +133,7 @@ class StoreReportModel extends MasterModel{
 	
 	public function getLocationWiseStock($data=[]){
         $queryData['tableName'] = $this->stockTrans;
-        $queryData['select'] = "item_master.item_name,SUM(stock_transaction.qty * stock_transaction.p_or_m) as qty, stock_transaction.batch_no,location_master.location, location_master.store_name,stock_transaction.heat_no";
+        $queryData['select'] = "item_master.item_name,item_master.item_code,SUM(stock_transaction.qty * stock_transaction.p_or_m) as qty, stock_transaction.batch_no,location_master.location, location_master.store_name,stock_transaction.heat_no";
         
         $queryData['leftJoin']['location_master'] = "location_master.id = stock_transaction.location_id";
         $queryData['leftJoin']['item_master'] = "stock_transaction.item_id = item_master.id";
@@ -174,6 +175,43 @@ class StoreReportModel extends MasterModel{
         endif;
         
         return $stockData;
+    }
+
+    public function getIssueRegister($data){
+        $data['tableName'] = $this->issueRegister;
+        $data['select'] = "issue_register.*,store_request.trans_number,store_request.trans_date,store_request.req_qty,item_master.item_code,item_master.item_name,employee_master.emp_name as emp_name,empMaster.emp_name as created_by_name,company_info.company_name as unit_name,machinMaster.item_code as machine_code,machinMaster.item_name as machine_name";
+        $data['leftJoin']['store_request'] = "store_request.id = issue_register.req_id";
+        $data['leftJoin']['prc_master'] = "prc_master.id = issue_register.prc_id";
+        $data['leftJoin']['item_master'] = "item_master.id  = issue_register.item_id";
+        $data['leftJoin']['item_category'] = "item_category.id  = item_master.category_id";
+        $data['leftJoin']['employee_master'] = "employee_master.id  = issue_register.issued_to";
+        $data['leftJoin']['employee_master empMaster'] = "empMaster.id  = issue_register.created_by";
+        $data['leftJoin']['company_info'] = "company_info.id  = issue_register.unit_id";
+        $data['leftJoin']['item_master machinMaster'] = "machinMaster.id  = issue_register.machine_id";
+
+        $data['customWhere'][] = '(issue_register.prc_id = 0 OR (issue_register.prc_id > 0 AND prc_master.mfg_type = "Forging")) AND issue_register.issue_date BETWEEN "'.$data['from_date'].'" AND "'.$data['to_date'].'" ';
+
+        $data['where']['issue_register.unit_id > '] = 0;
+        $data['where']['issue_register.machine_id > '] = 0;
+
+        if(!empty($data['item_id'])){
+            $data['where']['issue_register.item_id'] = $data['item_id'];
+        }
+        if(!empty($data['employee_id'])){
+            $data['where']['issue_register.issued_to'] = $data['employee_id'];
+        }
+        if(!empty($data['unit_id'])){
+            $data['where']['issue_register.unit_id'] = $data['unit_id'];
+        }
+        if(!empty($data['machine_id'])){
+            $data['where']['issue_register.machine_id'] = $data['machine_id'];
+        }
+        
+        $data['group_by'][] = 'issue_register.id'; 
+        $data['order_by']['issue_register.id'] = 'DESC'; 
+
+        $result = $this->rows($data);
+		return $result;
     }
 }
 ?>

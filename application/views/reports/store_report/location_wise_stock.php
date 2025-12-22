@@ -51,11 +51,11 @@
                                     </tr>
 									<tr>
 										<th class="text-center">#</th>
-										<th class="text-left">Item Description</th>
-										<th class="text-left">Location</th>
-										<th class="text-left">Heat No.</th>
-										<th class="text-left">Batch No.</th>
-										<th class="text-left">Qty</th>
+										<th class="text-center">Item Description</th>
+										<th class="text-center">Location</th>
+										<th class="text-center">Heat No.</th>
+										<th class="text-center">Batch No.</th>
+										<th class="text-center">Qty</th>
 									</tr>
 								</thead>
 								<tbody id="tbodyData"></tbody>

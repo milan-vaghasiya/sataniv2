@@ -61,7 +61,7 @@ class StoreModel extends MasterModel{
 
     public function getIssueDTRows($data){
         $data['tableName'] = $this->issueRegister;
-        $data['select'] = "issue_register.*,store_request.trans_number,prc_master.prc_number,store_request.trans_date,store_request.req_qty,item_master.item_name,employee_master.emp_name as emp_name,empMaster.emp_name as created_by_name";
+        $data['select'] = "issue_register.*,store_request.trans_number,prc_master.prc_number,store_request.trans_date,store_request.req_qty,item_master.item_name,employee_master.emp_name as emp_name,empMaster.emp_name as created_by_name,company_info.company_name as unit_name,machinMaster.item_code as machine_code,machinMaster.item_name as machine_name";
         $data['leftJoin']['store_request'] = "store_request.id = issue_register.req_id";
         $data['leftJoin']['prc_master'] = "prc_master.id = issue_register.prc_id";
         $data['leftJoin']['item_master'] = "item_master.id  = issue_register.item_id";
@@ -69,6 +69,8 @@ class StoreModel extends MasterModel{
         //$data['leftJoin']['batch_history'] = "batch_history.batch_no = issue_register.batch_no";
         $data['leftJoin']['employee_master'] = "employee_master.id  = issue_register.issued_to";
         $data['leftJoin']['employee_master empMaster'] = "empMaster.id  = issue_register.created_by";
+        $data['leftJoin']['company_info'] = "company_info.id  = issue_register.unit_id";
+        $data['leftJoin']['item_master machinMaster'] = "machinMaster.id  = issue_register.machine_id";
         $data['customWhere'][] = '(issue_register.prc_id = 0 OR (issue_register.prc_id > 0 AND prc_master.mfg_type = "Forging"))';
         if($data['status'] == 3){
             $data['where']['item_category.is_return'] = 1;
@@ -100,6 +102,8 @@ class StoreModel extends MasterModel{
             $data['searchCol'][] = "store_request.req_qty";
             $data['searchCol'][] = "issue_register.issue_qty";
             $data['searchCol'][] = "issue_register.heat_no";
+            $data['searchCol'][] = "company_info.company_name";
+            $data['searchCol'][] = "machinMaster.item_name";
             $data['searchCol'][] = "employee_master.emp_name";
             $data['searchCol'][] = "empMaster.emp_name";
         }
@@ -386,6 +390,8 @@ class StoreModel extends MasterModel{
                         'prc_id' => (!empty($data['prc_id']))?$data['prc_id']:0,
                         'issue_qty' => $value,
                         'issued_to' => $data['issued_to'],
+                        'unit_id' => (!empty($data['unit_id'])) ? $data['unit_id'] : 0,
+                        'machine_id' => (!empty($data['machine_id'])) ? $data['machine_id'] : 0,
                         'created_by' => $data['created_by']
                     ];
                     $result = $this->store($this->issueRegister, $issueData, 'Issue Requisition');

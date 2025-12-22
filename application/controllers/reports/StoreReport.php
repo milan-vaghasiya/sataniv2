@@ -367,7 +367,7 @@ class StoreReport extends MY_Controller{
         foreach($result as $row):
             $tbody .= '<tr>
                 <td class="text-center">'.$i++.'</td>
-                <td class="text-left">'.$row->item_name.'</td>
+                <td class="text-left">'.(!empty($row->item_code) ? '['.$row->item_code.'] ' : '').$row->item_name.'</td>
                 <td>'.$row->store_name.' - '.$row->location.'</td>
                 <td>'.$row->heat_no.'<br>'.$row->party_name.'</td>
                 <td>'.$row->batch_no.'</td>
@@ -392,6 +392,52 @@ class StoreReport extends MY_Controller{
         endforeach;
 
         $this->printJson(['status'=>1,'tbody'=>$tbody]);
+    }
+
+    /* Issue Register */
+    public function issueRegister(){
+        $this->data['pageHeader'] = 'ISSUE REGISTER';
+        $this->data['startDate'] = getFyDate(date("Y-m-01"));
+        $this->data['endDate'] = getFyDate(date("Y-m-t"));
+        $this->data['itemList'] = $this->item->getItemList(['item_type'=>'1,2,3']);
+        $this->data['empData'] = $this->employee->getEmployeeList();
+        $this->data['companyList'] = $this->employee->getCompanyList();
+        $this->data['machineList'] = $this->item->getItemList(['item_type'=>5]);
+
+        $this->load->view('reports/store_report/issue_register',$this->data);
+    }
+
+    public function getIssueRegister(){
+        $data = $this->input->post();
+        $errorMessage = array();
+        if(empty($data['from_date']))
+			$errorMessage['fromDate'] = "Date is required.";
+		if(empty($data['to_date']))
+			$errorMessage['toDate'] = "Date is required.";
+
+        if(!empty($errorMessage)){
+            $this->printJson(['status'=>0,'message'=>$errorMessage]);
+        }
+        else{
+            $itemData = $this->storeReport->getIssueRegister($data);
+            $tbody="";$i=1;
+            
+            foreach($itemData as $row){
+                $tbody .= '<tr>
+                    <td>'.$i++.'</td>
+                    <td>'.$row->issue_number.'</td>
+                    <td>'.(formatDate($row->issue_date)).'</td>
+                    <td>'.(!empty($row->item_code) ? '['.$row->item_code.'] ' : '').$row->item_name.'</td>
+                    <td>'.abs($row->issue_qty).'</td>
+                    <td>'.$row->heat_no.'</td>
+                    <td>'.$row->unit_name.'</td>
+                    <td>'.(!empty($row->machine_code) ? '['.$row->machine_code.'] ': '').$row->machine_name.'</td>
+                    <td>'.$row->emp_name.'</td>
+                </tr>';
+            }
+
+            $this->printJson(['status'=>1, 'tbody'=>$tbody]);
+        }
     }
 }
 ?>

@@ -6,13 +6,32 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="row">
-                            <div class="col-md-6"><h4 class="card-title"><?=$pageHeader?></h4></div>       
-							<div class="col-md-6">
-                                <select id="item_type" class="form-control float-right" style="width:40%;">
-                                    <option value="1">Finish Good</option>
-                                    <option value="2">Consumable</option>
-                                    <option value="3">Raw Material</option>
-                                </select>
+                            <div class="col-md-6"><h4 class="card-title"><?=$pageHeader?></h4></div>  
+                            <div class="col-md-6 float-right">  
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <select id="item_type" class="form-control select2">
+                                            <?php
+                                                foreach($this->itemTypes as $type=>$typeName):
+                                                    echo '<option value="'.$type.'">'.$typeName.'</option>';
+                                                endforeach;
+                                            ?>
+                                            <option value="99">Semi Finish</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <select id="store_name" class="form-control select2">
+                                            <option value="">ALL Location</option>
+                                            <?php 
+                                                if(!empty($locationList)){
+                                                    foreach($locationList as $row){
+                                                        echo '<option value="' . encodeURL($row['store_name']) . '">' . $row['store_name'] . '</option>';
+                                                    }
+                                                }
+                                            ?>
+                                        </select> 
+                                    </div>
+                                </div>
                             </div>
                         </div>                                         
                     </div>  
@@ -32,7 +51,17 @@
 $(document).ready(function(){
     $(document).on('change',"#item_type",function(){
         var item_type = $(this).val();
-        $("#reportTable").attr("data-url",'/getDTRows/'+item_type);
+        let store_name = $('#store_name').val();
+        store_name = store_name !='' ? '/'+store_name : '';
+        $("#reportTable").attr("data-url",'/getDTRows/'+item_type + store_name);
+        initTable();
+    });
+
+    $(document).on('change',"#store_name",function(){
+        var item_type = $('#item_type').val();
+        let store_name = $(this).val();
+        store_name = store_name !='' ? '/'+store_name : '';
+        $("#reportTable").attr("data-url",'/getDTRows/'+item_type + store_name);
         initTable();
     });
 });
