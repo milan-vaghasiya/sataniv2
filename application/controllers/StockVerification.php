@@ -19,31 +19,13 @@ class StockVerification extends MY_Controller
         $this->data['tableHeader'] = getStoreDtHeader("stockVerification");
         $this->data['locationList'] = $this->storeLocation->getStoreLocationList(['final_location'=>1,'store_type'=>0]);
 
-        $locationList = [];
-        foreach($this->data['locationList'] as $key => $row){
-            $locationList[$row->store_name] = array(
-                'id' => $row->id,
-                'store_name' => $row->store_name,
-            );
-        }
-        $this->data['locationList'] = $locationList;
-
         $this->load->view($this->indexPage,$this->data);
     }         
 
-    public function getDTRows($item_type="",$store_name = ""){
+    public function getDTRows($item_type="",$location_id = ""){
         $data = $this->input->post();
         $data['item_type'] = $item_type;
-        $data['store_name'] = !empty($store_name) ? decodeURL($store_name) : '';
-        $data['location_id'] = $this->storeLocation->getLocationIds($data);
-        if (!empty($data['item_type']) && $data['item_type'] == 99) {
-            $data['stock_where'] = 'stock_transaction.location_id = ' . $this->FORGE_STORE->id;
-        }
-        if (!empty($data['location_id'])) {
-            $data['stock_where'] = 'stock_transaction.location_id IN (' . implode(',', $data['location_id']) . ')';
-        }
-        $data['item_type'] = (!empty($data['item_type']) && $data['item_type'] == 99) ? 1 : $data['item_type'];
-        
+        $data['location_id'] = $location_id;
         $result = $this->stockVerify->getDTRows($data);
         $sendData = array();$i=($data['start'] + 1);
         foreach($result['data'] as $row):
@@ -58,7 +40,7 @@ class StockVerification extends MY_Controller
         $data = $this->input->post();
         $this->data['item_id'] =  $data['item_id'];
         // $this->data['stockData']= $this->itemStock->getItemStockBatchWise(['item_id'=>$data['item_id'], 'location_id'=>$this->RTD_STORE->id,'group_by'=>'location_id,batch_no']);
-        $this->data['stockData']= $this->itemStock->getItemStockBatchWise(['item_id'=>$data['item_id'], 'group_by'=>'location_id,batch_no,heat_no']);
+        $this->data['stockData']= $this->itemStock->getItemStockBatchWise(['item_id'=>$data['item_id'], 'store_type'=>0, 'group_by'=>'location_id,batch_no,heat_no']);
         $this->load->view($this->formPage, $this->data);
     }
 

@@ -146,6 +146,10 @@ class StockTransModel extends MasterModel{
             $queryData['where']['stock_transaction.ref_no'] = $data['ref_no'];
         endif;
 
+        if(isset($data['store_type'])):
+            $queryData['where']['lm.store_type'] = $data['store_type'];
+        endif;
+
         if(!empty($data['customWhere'])):
             $queryData['customWhere'][] = $data['customWhere'];
         endif;
@@ -160,10 +164,10 @@ class StockTransModel extends MasterModel{
         }else{
             $queryData['group_by'][] = "stock_transaction.unique_id";
         }
+
         if(isset($data['semi_stock']) && $data['semi_stock'] ==1):
             $queryData['where']['stock_transaction.location_id !='] = $this->RTD_STORE->id;
-        endif;
-    
+        endif;    
       
         $queryData['order_by']['lm.location'] = "ASC";
 

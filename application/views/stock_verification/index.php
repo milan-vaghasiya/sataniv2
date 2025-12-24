@@ -22,13 +22,7 @@
                                     <div class="input-group-append" style="width:40%;">
                                         <select id="store_name" class="form-control select2">
                                             <option value="">ALL Location</option>
-                                            <?php 
-                                                if(!empty($locationList)){
-                                                    foreach($locationList as $row){
-                                                        echo '<option value="' . encodeURL($row['store_name']) . '">' . $row['store_name'] . '</option>';
-                                                    }
-                                                }
-                                            ?>
+                                            <?=getLocationListOption($locationList)?>
                                         </select> 
                                     </div>
                                     <div class="input-group-append">

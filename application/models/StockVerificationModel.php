@@ -13,8 +13,8 @@ class StockVerificationModel extends MasterModel
         if(!empty($data['item_type'])){
 			$data['where']['item_master.item_type'] = $data['item_type'];
 		}
-		if (!empty($data['stock_where'])) {
-            $data['customWhere'][] = $data['stock_where'];
+		if (!empty($data['location_id'])) {
+            $data['where']['stock_transaction.location_id'] = $data['location_id'];
         }
 		$data['group_by'][] = 'stock_transaction.item_id';
 		$data['having'][] = 'SUM(stock_transaction.qty * stock_transaction.p_or_m) > 0';
