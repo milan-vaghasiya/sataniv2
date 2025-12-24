@@ -114,9 +114,9 @@ function getStoreDtHeader($page){
     $data['issueRequisition'][] = ["name" => "Req. Qty"];
     $data['issueRequisition'][] = ["name" => "Issue Qty"];
     $data['issueRequisition'][] = ["name" => "Heat No"];
+    $data['issueRequisition'][] = ["name" => "Issued To"];
     $data['issueRequisition'][] = ["name" => "Unit"];
     $data['issueRequisition'][] = ["name" => "Machine"];
-    $data['issueRequisition'][] = ["name" => "Issued To"];
     $data['issueRequisition'][] = ["name" => "Issued By"];
 
     /* Inspection Table Header */
@@ -348,7 +348,7 @@ function getIssueRequisitionData($data){
         $printBtn1 = '<a class="btn btn-dribbble btn-edit" href="'.base_url('pos/printMaterialAcceptTag/'.$pUrl).'" target="_blank" datatip="Material Tag Print" flow="down"><i class="fas fa-print" ></i></a>';
     }
     $action = getActionButton($printBtn.$printBtn1.$deleteButton);
-    return [$action,$data->sr_no,$data->issue_number,formatDate($data->issue_date),$data->trans_number,$data->prc_number,$data->item_name,abs($data->req_qty),abs($data->issue_qty),$data->heat_no,$data->unit_name,((!empty($data->machine_code) ? '['.$data->machine_code.'] ' : ''). $data->machine_name),$data->emp_name,$data->created_by_name];
+    return [$action,$data->sr_no,$data->issue_number,formatDate($data->issue_date),$data->trans_number,$data->prc_number,$data->item_name,abs($data->req_qty),abs($data->issue_qty),$data->heat_no,$data->emp_name,$data->unit_name,((!empty($data->machine_code) ? '['.$data->machine_code.'] ' : ''). $data->machine_name),$data->created_by_name];
 }
 
 /* Inspection Table Data */

@@ -81,9 +81,9 @@
 										<th>Item Name</th>
 										<th>Issue Qty</th>
 										<th>Heat No</th>
+										<th>Issued To</th>
 										<th>Unit</th>
 										<th>Machine</th>
-										<th>Issued To</th>
 									</tr>
 								</thead>
 								<tbody id="tbodyData"></tbody>

@@ -8,8 +8,8 @@
                         <div class="row">
                             <div class="col-md-6"><h4 class="card-title"><?=$pageHeader?></h4></div>  
                             <div class="col-md-6 float-right">  
-                                <div class="row">
-                                    <div class="col-md-6">
+                                <div class="input-group">
+                                    <div class="input-group-append" style="width:40%;">
                                         <select id="item_type" class="form-control select2">
                                             <?php
                                                 foreach($this->itemTypes as $type=>$typeName):
@@ -19,7 +19,7 @@
                                             <option value="99">Semi Finish</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="input-group-append" style="width:40%;">
                                         <select id="store_name" class="form-control select2">
                                             <option value="">ALL Location</option>
                                             <?php 
@@ -30,6 +30,11 @@
                                                 }
                                             ?>
                                         </select> 
+                                    </div>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn waves-effect waves-light btn-success refreshReportData loadData" title="Load Data">
+									        <i class="fas fa-sync-alt"></i> Load
+								        </button>
                                     </div>
                                 </div>
                             </div>
@@ -49,21 +54,13 @@
 <?php $this->load->view('includes/footer'); ?>
 <script>
 $(document).ready(function(){
-    $(document).on('change',"#item_type",function(){
-        var item_type = $(this).val();
+    $(document).on('click','.loadData',function(e){
+		let item_type = $('#item_type').val();
         let store_name = $('#store_name').val();
         store_name = store_name !='' ? '/'+store_name : '';
         $("#reportTable").attr("data-url",'/getDTRows/'+item_type + store_name);
         initTable();
-    });
-
-    $(document).on('change',"#store_name",function(){
-        var item_type = $('#item_type').val();
-        let store_name = $(this).val();
-        store_name = store_name !='' ? '/'+store_name : '';
-        $("#reportTable").attr("data-url",'/getDTRows/'+item_type + store_name);
-        initTable();
-    });
+    });  
 });
 
 // function editStock(data,button){ 

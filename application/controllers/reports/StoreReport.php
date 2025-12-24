@@ -430,9 +430,9 @@ class StoreReport extends MY_Controller{
                     <td>'.(!empty($row->item_code) ? '['.$row->item_code.'] ' : '').$row->item_name.'</td>
                     <td>'.abs($row->issue_qty).'</td>
                     <td>'.$row->heat_no.'</td>
+                    <td>'.$row->emp_name.'</td>
                     <td>'.$row->unit_name.'</td>
                     <td>'.(!empty($row->machine_code) ? '['.$row->machine_code.'] ': '').$row->machine_name.'</td>
-                    <td>'.$row->emp_name.'</td>
                 </tr>';
             }
 
