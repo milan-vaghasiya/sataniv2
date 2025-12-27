@@ -122,6 +122,7 @@ class GateInwardModel extends masterModel{
             $itemData = $data['batchData'];unset($data['batchData']);
 
             $data['trans_type'] = 2;$data['entry_type'] = $this->data['entryData']->id;
+            $data['cm_id'] = '';
             $result = $this->store($this->grn_master,$data,'Gate Inward');
 
             foreach($itemData as $row):         
@@ -131,6 +132,7 @@ class GateInwardModel extends masterModel{
                 $row['entry_type'] = $this->data['entryData']->id;
                 $row['type'] = 1;
                 $row['is_delete'] = 0;
+                $row['cm_id'] = 0;
 
                 if($row['item_stock_type'] == 1):
                     $nextBatchNo = $this->gateReceipt->getNextBatchOrSerialNo(['trans_id'=>$row['id'],'item_id'=>$row['item_id'],'heat_no'=>$row['heat_no']]);
